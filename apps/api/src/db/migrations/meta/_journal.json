@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1729998036245,
+      "tag": "0000_blushing_marvex",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1730023248553,
+      "tag": "0001_complex_midnight",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1730023370336,
+      "tag": "0002_aromatic_tenebrous",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1730032734518,
+      "tag": "0003_friendly_arclight",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1730050018489,
+      "tag": "0004_rich_warhawk",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1730133863622,
+      "tag": "0005_clever_blade",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1731389076125,
+      "tag": "0006_graceful_payback",
+      "breakpoints": true
+    }
+  ]
+}

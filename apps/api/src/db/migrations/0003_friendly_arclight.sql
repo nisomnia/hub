@@ -1,0 +1,1 @@
+ALTER TABLE "genres" ADD COLUMN "status" "status" DEFAULT 'draft' NOT NULL;

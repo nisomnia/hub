@@ -28,5 +28,8 @@
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
     "vitest": "npm:@voidzero-dev/vite-plus-test@latest",
     "vite-plus": "latest"
+  },
+  "dependencies": {
+    "drizzle-zod": "^0.8.3"
   }
 }
