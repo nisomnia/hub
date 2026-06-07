@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm"
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
 
 import { movieGenres } from "./movie"
 import { statusEnum } from "./status"
@@ -17,6 +18,9 @@ export const genres = pgTable("genres", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 })
+
+export const insertGenreSchema = createInsertSchema(genres)
+export const updateGenreSchema = createUpdateSchema(genres)
 
 export const genresRelations = relations(genres, ({ many }) => ({
   movies: many(movieGenres),

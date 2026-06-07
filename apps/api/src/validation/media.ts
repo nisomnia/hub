@@ -1,4 +1,10 @@
+import { createInsertSchema } from "drizzle-zod"
 import { z } from "zod"
+
+import { MEDIA_CATEGORY, MEDIA_TYPE, medias } from "../db/schema/media"
+
+export const mediaCategory = z.enum(MEDIA_CATEGORY)
+export const mediaType = z.enum(MEDIA_TYPE)
 
 const MAX_FILE_SIZE = 500000
 
@@ -8,56 +14,6 @@ const ACCEPTED_IMAGE_TYPES = [
   "image/png",
   "image/webp",
 ]
-export const MEDIA_CATEGORY = [
-  "all",
-  "article",
-  "feed",
-  "topic",
-  "genre",
-  "review",
-  "tutorial",
-  "movie",
-  "tv",
-  "game",
-  "production_company",
-] as const
-
-export const MEDIA_TYPE = [
-  "image",
-  "audio",
-  "video",
-  "document",
-  "other",
-] as const
-
-export const mediaCategory = z.enum(MEDIA_CATEGORY)
-export const mediaType = z.enum(MEDIA_TYPE)
-
-export const mediaInput = {
-  name: z.string({
-    invalid_type_error: "Name must be a string",
-    required_error: "Name Required",
-  }),
-  description: z
-    .string({
-      invalid_type_error: "Description must be a string",
-    })
-    .optional(),
-  url: z.string({
-    invalid_type_error: "Url must be a string",
-    required_error: "Url Required",
-  }),
-  category: z
-    .enum(MEDIA_CATEGORY, {
-      invalid_type_error:
-        "only article, topic, review ,tutorial, movie, tv, game, genre, production_company, are accepted",
-    })
-    .optional(),
-  fileType: z.string({
-    invalid_type_error: "FileType must be a string",
-    required_error: "FileType Required",
-  }),
-}
 
 const mediaImageUpload = {
   image: z
@@ -73,25 +29,47 @@ const mediaImageUpload = {
     ),
 }
 
-export const createMediaSchema = z.object({
-  ...mediaInput,
-})
+export const createMediaSchema = createInsertSchema(medias)
+  .omit({
+    id: true,
+    authorId: true,
+    createdAt: true,
+    updatedAt: true,
+    type: true,
+  })
+  .extend({
+    description: z
+      .string({
+        message: "Description must be a string",
+      })
+      .optional(),
+  })
 
 export const uploadImageMediaSchema = z.object({
   ...mediaImageUpload,
 })
 
-export const updateMediaSchema = z.object({
-  id: z.string({
-    invalid_type_error: "ID must be a string",
-    required_error: "ID Required",
-  }),
-  description: z
-    .string({
-      invalid_type_error: "Description must be a string",
-    })
-    .optional(),
-})
+export const updateMediaSchema = createInsertSchema(medias)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+    name: true,
+    url: true,
+    fileType: true,
+    category: true,
+    type: true,
+    authorId: true,
+  })
+  .extend({
+    id: z.string({
+      message: "ID must be a string",
+    }),
+    description: z
+      .string({
+        message: "Description must be a string",
+      })
+      .optional(),
+  })
 
 export type CreateMediaSchema = z.infer<typeof createMediaSchema>
 export type UpdateMediaSchema = z.infer<typeof updateMediaSchema>

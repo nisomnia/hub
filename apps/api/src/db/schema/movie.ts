@@ -7,12 +7,22 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core"
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import { z } from "zod"
 
-import { MOVIE_AIRING_STATUS } from "@/lib/validation/movie"
 import { genres } from "./genre"
 import { overviews } from "./overview"
 import { productionCompanies } from "./production-company"
 import { statusEnum } from "./status"
+
+export const MOVIE_AIRING_STATUS = [
+  "released",
+  "upcoming",
+  "canceled",
+  "in_production",
+] as const
+
+export const movieAiringStatus = z.enum(MOVIE_AIRING_STATUS)
 
 export const movieAiringStatusEnum = pgEnum(
   "movie_airing_status",
@@ -47,6 +57,9 @@ export const movies = pgTable("movies", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const insertMovieSchema = createInsertSchema(movies)
+export const updateMovieSchema = createUpdateSchema(movies)
+
 export const moviesRelations = relations(movies, ({ many }) => ({
   overviews: many(movieOverviews),
   genres: many(movieGenres),
@@ -69,6 +82,9 @@ export const movieGenres = pgTable(
     }),
   }),
 )
+
+export const insertMovieGenreSchema = createInsertSchema(movieGenres)
+export const updateMovieGenreSchema = createUpdateSchema(movieGenres)
 
 export const movieGenresRelations = relations(movieGenres, ({ one }) => ({
   movie: one(movies, {
@@ -98,6 +114,9 @@ export const movieOverviews = pgTable(
   }),
 )
 
+export const insertMovieOverviewSchema = createInsertSchema(movieOverviews)
+export const updateMovieOverviewSchema = createUpdateSchema(movieOverviews)
+
 export const movieOverviewsRelations = relations(movieOverviews, ({ one }) => ({
   movie: one(movies, {
     fields: [movieOverviews.movieId],
@@ -126,6 +145,13 @@ export const movieProductionCompanies = pgTable(
   }),
 )
 
+export const insertMovieProductionCompanySchema = createInsertSchema(
+  movieProductionCompanies,
+)
+export const updateMovieProductionCompanySchema = createUpdateSchema(
+  movieProductionCompanies,
+)
+
 export const movieProductionCompaniesRelations = relations(
   movieProductionCompanies,
   ({ one }) => ({
@@ -142,3 +168,16 @@ export const movieProductionCompaniesRelations = relations(
 
 export type InsertMovie = typeof movies.$inferInsert
 export type SelectMovie = typeof movies.$inferSelect
+
+export type InsertMovieGenre = typeof movieGenres.$inferInsert
+export type SelectMovieGenre = typeof movieGenres.$inferSelect
+
+export type InsertMovieOverview = typeof movieOverviews.$inferInsert
+export type SelectMovieOverview = typeof movieOverviews.$inferSelect
+
+export type InsertMovieProductionCompany =
+  typeof movieProductionCompanies.$inferInsert
+export type SelectMovieProductionCompany =
+  typeof movieProductionCompanies.$inferSelect
+
+export type MovieAiringStatus = z.infer<typeof movieAiringStatus>

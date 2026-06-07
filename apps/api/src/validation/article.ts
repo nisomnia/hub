@@ -1,115 +1,223 @@
+import { createInsertSchema } from "drizzle-zod"
 import { z } from "zod"
 
-import { LANGUAGE_TYPE } from "./language"
-import { STATUS_TYPE } from "./status"
-
-export const ARTICLE_VISIBILITY = ["public", "member"] as const
+import { ARTICLE_VISIBILITY, articles } from "../db/schema/article"
+import { LANGUAGE_TYPE } from "../db/schema/language"
+import { STATUS_TYPE } from "../db/schema/status"
 
 export const articleVisibility = z.enum(ARTICLE_VISIBILITY)
 
-export const articleInput = {
-  title: z
-    .string({
-      required_error: "Title is required",
-      invalid_type_error: "Title must be a string",
-    })
-    .min(3),
-  language: z
-    .enum(LANGUAGE_TYPE, {
-      invalid_type_error: "only id and en are accepted",
-    })
-    .optional(),
-  content: z
-    .string({
-      invalid_type_error: "Content must be a string",
-    })
-    .min(50),
-  excerpt: z
-    .string({
-      invalid_type_error: "Content must be a string",
-    })
-    .optional(),
-  metaTitle: z
-    .string({
-      invalid_type_error: "Meta Title must be a string",
-    })
-    .optional(),
-  metaDescription: z
-    .string({
-      invalid_type_error: "Meta Description must be a string",
-    })
-    .optional(),
-  status: z
-    .enum(STATUS_TYPE, {
-      invalid_type_error:
-        "only published, draft, rejected and in_review are accepted",
-    })
-    .optional(),
-  visibility: z
-    .enum(ARTICLE_VISIBILITY, {
-      invalid_type_error: "only public and member are accepted",
-    })
-    .optional(),
-  featuredImage: z.string({
-    required_error: "Featured Image is required",
-    invalid_type_error: "Featured Image must be a string",
-  }),
-  topics: z
-    .string({
-      required_error: "Topic Id is required",
-      invalid_type_error: "Topic Id must be a string",
-    })
-    .array(),
-  authors: z
-    .string({
-      required_error: "Author Id is required",
-      invalid_type_error: "Author Id must be a string",
-    })
-    .array(),
-  editors: z
-    .string({
-      required_error: "Editor Id is required",
-      invalid_type_error: "Editor Id must be a string",
-    })
-    .array(),
-}
-
-const translateArticleInput = {
-  ...articleInput,
-  articleTranslationId: z.string({
-    required_error: "Article Translation ID is required",
-    invalid_type_error: "Article Translation ID must be a string",
-  }),
-}
-
-const updateArticleInput = {
-  ...articleInput,
-  id: z
-    .string({
-      required_error: "ID is required",
-      invalid_type_error: "ID must be a string",
-    })
-    .min(1),
-  slug: z
-    .string({
-      required_error: "Slug is required",
-      invalid_type_error: "Slug must be a string",
-    })
-    .regex(new RegExp(/^[a-zA-Z0-9_-]*$/), {
-      message: "Slug should be character a-z, A-Z, number, - and _",
+export const createArticleSchema = createInsertSchema(articles)
+  .omit({
+    id: true,
+    slug: true,
+    createdAt: true,
+    updatedAt: true,
+    articleTranslationId: true,
+  })
+  .extend({
+    title: z
+      .string({
+        message: "Title is required",
+      })
+      .min(3),
+    content: z
+      .string({
+        message: "Content must be a string",
+      })
+      .min(50),
+    excerpt: z
+      .string({
+        message: "Content must be a string",
+      })
+      .optional(),
+    metaTitle: z
+      .string({
+        message: "Meta Title must be a string",
+      })
+      .optional(),
+    metaDescription: z
+      .string({
+        message: "Meta Description must be a string",
+      })
+      .optional(),
+    featuredImage: z.string({
+      message: "Featured Image is required",
     }),
-}
+    topics: z
+      .string({
+        message: "Topic Id is required",
+      })
+      .array(),
+    authors: z
+      .string({
+        message: "Author Id is required",
+      })
+      .array(),
+    editors: z
+      .string({
+        message: "Editor Id is required",
+      })
+      .array(),
+    language: z.enum(LANGUAGE_TYPE, {
+      message: "only id and en are accepted",
+    }),
+    status: z
+      .enum(STATUS_TYPE, {
+        message: "only published, draft, rejected and in_review are accepted",
+      })
+      .optional(),
+    visibility: z
+      .enum(ARTICLE_VISIBILITY, {
+        message: "only public and member are accepted",
+      })
+      .optional(),
+  })
 
-export const createArticleSchema = z.object({
-  ...articleInput,
-})
+export const translateArticleSchema = createInsertSchema(articles)
+  .omit({
+    id: true,
+    slug: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    title: z
+      .string({
+        message: "Title is required",
+      })
+      .min(3),
+    content: z
+      .string({
+        message: "Content must be a string",
+      })
+      .min(50),
+    excerpt: z
+      .string({
+        message: "Content must be a string",
+      })
+      .optional(),
+    metaTitle: z
+      .string({
+        message: "Meta Title must be a string",
+      })
+      .optional(),
+    metaDescription: z
+      .string({
+        message: "Meta Description must be a string",
+      })
+      .optional(),
+    featuredImage: z.string({
+      message: "Featured Image is required",
+    }),
+    articleTranslationId: z.string({
+      message: "Article Translation ID is required",
+    }),
+    topics: z
+      .string({
+        message: "Topic Id is required",
+      })
+      .array(),
+    authors: z
+      .string({
+        message: "Author Id is required",
+      })
+      .array(),
+    editors: z
+      .string({
+        message: "Editor Id is required",
+      })
+      .array(),
+    language: z.enum(LANGUAGE_TYPE, {
+      message: "only id and en are accepted",
+    }),
+    status: z
+      .enum(STATUS_TYPE, {
+        message: "only published, draft, rejected and in_review are accepted",
+      })
+      .optional(),
+    visibility: z
+      .enum(ARTICLE_VISIBILITY, {
+        message: "only public and member are accepted",
+      })
+      .optional(),
+  })
 
-export const translateArticleSchema = z.object({
-  ...translateArticleInput,
-})
-
-export const updateArticleSchema = z.object({
-  ...updateArticleInput,
-})
+export const updateArticleSchema = createInsertSchema(articles)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+    articleTranslationId: true,
+  })
+  .extend({
+    id: z
+      .string({
+        message: "ID is required",
+      })
+      .min(1),
+    slug: z
+      .string({
+        message: "Slug is required",
+      })
+      .regex(new RegExp(/^[a-zA-Z0-9_-]*$/), {
+        message: "Slug should be character a-z, A-Z, number, - and _",
+      }),
+    title: z
+      .string({
+        message: "Title is required",
+      })
+      .min(3),
+    content: z
+      .string({
+        message: "Content must be a string",
+      })
+      .min(50),
+    excerpt: z
+      .string({
+        message: "Content must be a string",
+      })
+      .optional(),
+    metaTitle: z
+      .string({
+        message: "Meta Title must be a string",
+      })
+      .optional(),
+    metaDescription: z
+      .string({
+        message: "Meta Description must be a string",
+      })
+      .optional(),
+    featuredImage: z.string({
+      message: "Featured Image is required",
+    }),
+    topics: z
+      .string({
+        message: "Topic Id is required",
+      })
+      .array(),
+    authors: z
+      .string({
+        message: "Author Id is required",
+      })
+      .array(),
+    editors: z
+      .string({
+        message: "Editor Id is required",
+      })
+      .array(),
+    language: z.enum(LANGUAGE_TYPE, {
+      message: "only id and en are accepted",
+    }),
+    status: z
+      .enum(STATUS_TYPE, {
+        message: "only published, draft, rejected and in_review are accepted",
+      })
+      .optional(),
+    visibility: z
+      .enum(ARTICLE_VISIBILITY, {
+        message: "only public and member are accepted",
+      })
+      .optional(),
+  })
 
 export type ArticleVisibility = z.infer<typeof articleVisibility>

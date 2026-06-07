@@ -6,13 +6,18 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core"
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import { z } from "zod"
 
-import { ARTICLE_VISIBILITY } from "@/lib/validation/article"
 import { articleComments } from "./article-comment"
 import { languageEnum } from "./language"
 import { statusEnum } from "./status"
 import { topics } from "./topic"
 import { users } from "./user"
+
+export const ARTICLE_VISIBILITY = ["public", "member"] as const
+
+export const articleVisibility = z.enum(ARTICLE_VISIBILITY)
 
 export const articleVisibilityEnum = pgEnum(
   "article_visibility",
@@ -24,6 +29,11 @@ export const articleTranslations = pgTable("article_translations", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 })
+
+export const insertArticleTranslationSchema =
+  createInsertSchema(articleTranslations)
+export const updateArticleTranslationSchema =
+  createUpdateSchema(articleTranslations)
 
 export const articles = pgTable("articles", {
   id: text("id").primaryKey(),
@@ -43,6 +53,9 @@ export const articles = pgTable("articles", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 })
+
+export const insertArticleSchema = createInsertSchema(articles)
+export const updateArticleSchema = createUpdateSchema(articles)
 
 export const articlesRelations = relations(articles, ({ one, many }) => ({
   articleTranslation: one(articleTranslations, {
@@ -79,6 +92,9 @@ export const articleAuthors = pgTable(
   }),
 )
 
+export const insertArticleAuthorSchema = createInsertSchema(articleAuthors)
+export const updateArticleAuthorSchema = createUpdateSchema(articleAuthors)
+
 export const articleAuthorsRelations = relations(articleAuthors, ({ one }) => ({
   article: one(articles, {
     fields: [articleAuthors.articleId],
@@ -106,6 +122,9 @@ export const articleEditors = pgTable(
     }),
   }),
 )
+
+export const insertArticleEditorSchema = createInsertSchema(articleEditors)
+export const updateArticleEditorSchema = createUpdateSchema(articleEditors)
 
 export const articleEditorsRelations = relations(articleEditors, ({ one }) => ({
   article: one(articles, {
@@ -135,6 +154,9 @@ export const articleTopics = pgTable(
   }),
 )
 
+export const insertArticleTopicSchema = createInsertSchema(articleTopics)
+export const updateArticleTopicSchema = createUpdateSchema(articleTopics)
+
 export const articleTopicsRelations = relations(articleTopics, ({ one }) => ({
   article: one(articles, {
     fields: [articleTopics.articleId],
@@ -151,3 +173,14 @@ export type SelectArticle = typeof articles.$inferSelect
 
 export type InsertArticleTranslation = typeof articleTranslations.$inferInsert
 export type SelectArticleTranslation = typeof articleTranslations.$inferSelect
+
+export type InsertArticleAuthor = typeof articleAuthors.$inferInsert
+export type SelectArticleAuthor = typeof articleAuthors.$inferSelect
+
+export type InsertArticleEditor = typeof articleEditors.$inferInsert
+export type SelectArticleEditor = typeof articleEditors.$inferSelect
+
+export type InsertArticleTopic = typeof articleTopics.$inferInsert
+export type SelectArticleTopic = typeof articleTopics.$inferSelect
+
+export type ArticleVisibility = z.infer<typeof articleVisibility>

@@ -1,44 +1,57 @@
+import { createInsertSchema } from "drizzle-zod"
 import { z } from "zod"
 
-import { LANGUAGE_TYPE } from "./language"
+import { LANGUAGE_TYPE } from "../db/schema/language"
+import { overviews } from "../db/schema/overview"
 
-export const OVERVIEW_TYPE = ["game", "movie", "tv"] as const
-
-const overviewInput = {
-  title: z
-    .string({
-      required_error: "Title is required",
-      invalid_type_error: "Title must be a string",
-    })
-    .min(2),
-  content: z.string({
-    invalid_type_error: "Description must be a string",
-  }),
-  language: z.enum(LANGUAGE_TYPE, {
-    invalid_type_error: "only id and en are accepted",
-  }),
-}
-
-const updateOverviewInput = {
-  ...overviewInput,
-  id: z.string(),
-  slug: z
-    .string({
-      required_error: "Slug is required",
-      invalid_type_error: "Slug must be a string",
-    })
-    .regex(new RegExp(/^[a-zA-Z0-9_-]*$/), {
-      message: "Slug should be character a-z, A-Z, number, - and _",
+export const createOverviewSchema = createInsertSchema(overviews)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    type: true,
+  })
+  .extend({
+    title: z
+      .string({
+        message: "Title is required",
+      })
+      .min(2),
+    content: z.string({
+      message: "Description must be a string",
     }),
-}
+    language: z.enum(LANGUAGE_TYPE, {
+      message: "only id and en are accepted",
+    }),
+  })
 
-export const createOverviewSchema = z.object({
-  ...overviewInput,
-})
-
-export const updateOverviewSchema = z.object({
-  ...updateOverviewInput,
-})
+export const updateOverviewSchema = createInsertSchema(overviews)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+    type: true,
+  })
+  .extend({
+    id: z.string(),
+    slug: z
+      .string({
+        message: "Slug is required",
+      })
+      .regex(new RegExp(/^[a-zA-Z0-9_-]*$/), {
+        message: "Slug should be character a-z, A-Z, number, - and _",
+      }),
+    title: z
+      .string({
+        message: "Title is required",
+      })
+      .min(2),
+    content: z.string({
+      message: "Description must be a string",
+    }),
+    language: z.enum(LANGUAGE_TYPE, {
+      message: "only id and en are accepted",
+    }),
+  })
 
 export type CreateOverviewSchema = z.infer<typeof createOverviewSchema>
 export type UpdateOverviewSchema = z.infer<typeof updateOverviewSchema>

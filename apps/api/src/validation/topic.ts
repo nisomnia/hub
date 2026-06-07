@@ -1,92 +1,171 @@
+import { createInsertSchema } from "drizzle-zod"
 import { z } from "zod"
 
-import { LANGUAGE_TYPE } from "./language"
-import { STATUS_TYPE } from "./status"
-
-export const TOPIC_VISIBILITY = ["public", "internal"] as const
+import { LANGUAGE_TYPE } from "../db/schema/language"
+import { STATUS_TYPE } from "../db/schema/status"
+import { TOPIC_VISIBILITY, topics } from "../db/schema/topic"
 
 export const topicVisibility = z.enum(TOPIC_VISIBILITY)
 
-const topicInput = {
-  title: z
-    .string({
-      required_error: "Title is required",
-      invalid_type_error: "Title must be a string",
-    })
-    .min(2)
-    .max(32),
-  description: z
-    .string({
-      invalid_type_error: "Description must be a string",
-    })
-    .optional(),
-  metaTitle: z
-    .string({
-      invalid_type_error: "Meta Title must be a string",
-    })
-    .optional(),
-  metaDescription: z
-    .string({
-      invalid_type_error: "Meta Description must be a string",
-    })
-    .optional(),
-  visibility: z
-    .enum(TOPIC_VISIBILITY, {
-      invalid_type_error: "only public and internal are accepted",
-    })
-    .optional(),
-  status: z
-    .enum(STATUS_TYPE, {
-      invalid_type_error:
-        "only published, draft, rejected and in_review are accepted",
-    })
-    .optional(),
-  featuredImage: z
-    .string({
-      invalid_type_error: "Featured Image ID must be a string",
-    })
-    .optional()
-    .nullish(),
-  language: z.enum(LANGUAGE_TYPE, {
-    invalid_type_error: "only id and en are accepted",
-  }),
-}
-
-const translateTopicInput = {
-  ...topicInput,
-  topicTranslationId: z.string({
-    required_error: "Topic Translation ID is required",
-    invalid_type_error: "Topic Traslation Primary ID must be a string",
-  }),
-}
-
-const updateTopicInput = {
-  ...topicInput,
-  id: z.string({
-    required_error: "Id is required",
-    invalid_type_error: "Id must be a number",
-  }),
-  slug: z
-    .string({
-      required_error: "Slug is required",
-      invalid_type_error: "Slug must be a string",
-    })
-    .regex(new RegExp(/^[a-zA-Z0-9_-]*$/), {
-      message: "Slug should be character a-z, A-Z, number, - and _",
+export const createTopicSchema = createInsertSchema(topics)
+  .omit({
+    id: true,
+    slug: true,
+    createdAt: true,
+    updatedAt: true,
+    topicTranslationId: true,
+  })
+  .extend({
+    title: z
+      .string({
+        message: "Title is required",
+      })
+      .min(2)
+      .max(32),
+    description: z
+      .string({
+        message: "Description must be a string",
+      })
+      .optional(),
+    metaTitle: z
+      .string({
+        message: "Meta Title must be a string",
+      })
+      .optional(),
+    metaDescription: z
+      .string({
+        message: "Meta Description must be a string",
+      })
+      .optional(),
+    visibility: z
+      .enum(TOPIC_VISIBILITY, {
+        message: "only public and internal are accepted",
+      })
+      .optional(),
+    status: z
+      .enum(STATUS_TYPE, {
+        message: "only published, draft, rejected and in_review are accepted",
+      })
+      .optional(),
+    featuredImage: z
+      .string({
+        message: "Featured Image ID must be a string",
+      })
+      .nullish(),
+    language: z.enum(LANGUAGE_TYPE, {
+      message: "only id and en are accepted",
     }),
-}
+  })
 
-export const createTopicSchema = z.object({
-  ...topicInput,
-})
+export const translateTopicSchema = createInsertSchema(topics)
+  .omit({
+    id: true,
+    slug: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    title: z
+      .string({
+        message: "Title is required",
+      })
+      .min(2)
+      .max(32),
+    description: z
+      .string({
+        message: "Description must be a string",
+      })
+      .optional(),
+    metaTitle: z
+      .string({
+        message: "Meta Title must be a string",
+      })
+      .optional(),
+    metaDescription: z
+      .string({
+        message: "Meta Description must be a string",
+      })
+      .optional(),
+    visibility: z
+      .enum(TOPIC_VISIBILITY, {
+        message: "only public and internal are accepted",
+      })
+      .optional(),
+    status: z
+      .enum(STATUS_TYPE, {
+        message: "only published, draft, rejected and in_review are accepted",
+      })
+      .optional(),
+    featuredImage: z
+      .string({
+        message: "Featured Image ID must be a string",
+      })
+      .nullish(),
+    language: z.enum(LANGUAGE_TYPE, {
+      message: "only id and en are accepted",
+    }),
+    topicTranslationId: z.string({
+      message: "Topic Translation ID is required",
+    }),
+  })
 
-export const translateTopicSchema = z.object({
-  ...translateTopicInput,
-})
-
-export const updateTopicSchema = z.object({
-  ...updateTopicInput,
-})
+export const updateTopicSchema = createInsertSchema(topics)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+    topicTranslationId: true,
+  })
+  .extend({
+    id: z.string({
+      message: "Id is required",
+    }),
+    slug: z
+      .string({
+        message: "Slug is required",
+      })
+      .regex(new RegExp(/^[a-zA-Z0-9_-]*$/), {
+        message: "Slug should be character a-z, A-Z, number, - and _",
+      }),
+    title: z
+      .string({
+        message: "Title is required",
+      })
+      .min(2)
+      .max(32),
+    description: z
+      .string({
+        message: "Description must be a string",
+      })
+      .optional(),
+    metaTitle: z
+      .string({
+        message: "Meta Title must be a string",
+      })
+      .optional(),
+    metaDescription: z
+      .string({
+        message: "Meta Description must be a string",
+      })
+      .optional(),
+    visibility: z
+      .enum(TOPIC_VISIBILITY, {
+        message: "only public and internal are accepted",
+      })
+      .optional(),
+    status: z
+      .enum(STATUS_TYPE, {
+        message: "only published, draft, rejected and in_review are accepted",
+      })
+      .optional(),
+    featuredImage: z
+      .string({
+        message: "Featured Image ID must be a string",
+      })
+      .nullish(),
+    language: z.enum(LANGUAGE_TYPE, {
+      message: "only id and en are accepted",
+    }),
+  })
 
 export type CreateTopicSchema = z.infer<typeof createTopicSchema>
 export type UpdateTopicSchema = z.infer<typeof updateTopicSchema>

@@ -1,11 +1,16 @@
 import { relations } from "drizzle-orm"
 import { pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import { z } from "zod"
 
-import { TOPIC_VISIBILITY } from "@/lib/validation/topic"
 import { articleTopics } from "./article"
 import { feedTopics } from "./feed"
 import { languageEnum } from "./language"
 import { statusEnum } from "./status"
+
+export const TOPIC_VISIBILITY = ["public", "internal"] as const
+
+export const topicVisibility = z.enum(TOPIC_VISIBILITY)
 
 export const topicVisibilityEnum = pgEnum("topic_visibility", TOPIC_VISIBILITY)
 
@@ -14,6 +19,11 @@ export const topicTranslations = pgTable("topic_translations", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 })
+
+export const insertTopicTranslationSchema =
+  createInsertSchema(topicTranslations)
+export const updateTopicTranslationSchema =
+  createUpdateSchema(topicTranslations)
 
 export const topics = pgTable("topics", {
   id: text("id").primaryKey(),
@@ -32,6 +42,9 @@ export const topics = pgTable("topics", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 })
+
+export const insertTopicSchema = createInsertSchema(topics)
+export const updateTopicSchema = createUpdateSchema(topics)
 
 export const topicsRelations = relations(topics, ({ one, many }) => ({
   topicTranslation: one(topicTranslations, {
@@ -54,3 +67,5 @@ export type SelectTopic = typeof topics.$inferSelect
 
 export type InsertTopicTranslation = typeof topicTranslations.$inferInsert
 export type SelectTopicTranslation = typeof topicTranslations.$inferSelect
+
+export type TopicVisibility = z.infer<typeof topicVisibility>

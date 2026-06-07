@@ -1,74 +1,116 @@
+import { createInsertSchema } from "drizzle-zod"
 import { z } from "zod"
 
-import { STATUS_TYPE } from "./status"
+import { productionCompanies } from "../db/schema/production-company"
+import { STATUS_TYPE } from "../db/schema/status"
 
-const productionCompanyInput = {
-  tmdbId: z.string({
-    required_error: "TMDB ID is required",
-    invalid_type_error: "TMDB ID must be a string",
-  }),
-  name: z
-    .string({
-      required_error: "Name is required",
-      invalid_type_error: "Name must be a string",
-    })
-    .min(1),
-  logo: z
-    .string({
-      invalid_type_error: "Logo must be a string",
-    })
-    .optional(),
-  originCountry: z
-    .string({
-      invalid_type_error: "Origin Country must be a string",
-    })
-    .optional(),
-  description: z
-    .string({
-      invalid_type_error: "Description must be a string",
-    })
-    .optional(),
-  status: z
-    .enum(STATUS_TYPE, {
-      invalid_type_error:
-        "only published, draft, rejected and in_review are accepted",
-    })
-    .optional(),
-  metaTitle: z
-    .string({
-      invalid_type_error: "Meta Title must be a string",
-    })
-    .optional(),
-  metaDescription: z
-    .string({
-      invalid_type_error: "Meta Description must be a string",
-    })
-    .optional(),
-}
-
-const updateProductionCompanyInput = {
-  id: z.string({
-    required_error: "Id is required",
-    invalid_type_error: "Id must be a number",
-  }),
-  slug: z
-    .string({
-      required_error: "Slug is required",
-      invalid_type_error: "Slug must be a string",
-    })
-    .regex(new RegExp(/^[a-zA-Z0-9_-]*$/), {
-      message: "Slug should be character a-z, A-Z, number, - and _",
+export const createProductionCompanySchema = createInsertSchema(
+  productionCompanies,
+)
+  .omit({
+    id: true,
+    slug: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    tmdbId: z.string({
+      message: "TMDB ID is required",
     }),
-  ...productionCompanyInput,
-}
+    name: z
+      .string({
+        message: "Name is required",
+      })
+      .min(1),
+    logo: z
+      .string({
+        message: "Logo must be a string",
+      })
+      .optional(),
+    originCountry: z
+      .string({
+        message: "Origin Country must be a string",
+      })
+      .optional(),
+    description: z
+      .string({
+        message: "Description must be a string",
+      })
+      .optional(),
+    status: z
+      .enum(STATUS_TYPE, {
+        message: "only published, draft, rejected and in_review are accepted",
+      })
+      .optional(),
+    metaTitle: z
+      .string({
+        message: "Meta Title must be a string",
+      })
+      .optional(),
+    metaDescription: z
+      .string({
+        message: "Meta Description must be a string",
+      })
+      .optional(),
+  })
 
-export const createProductionCompanySchema = z.object({
-  ...productionCompanyInput,
-})
-
-export const updateProductionCompanySchema = z.object({
-  ...updateProductionCompanyInput,
-})
+export const updateProductionCompanySchema = createInsertSchema(
+  productionCompanies,
+)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    id: z.string({
+      message: "Id is required",
+    }),
+    slug: z
+      .string({
+        message: "Slug is required",
+      })
+      .regex(new RegExp(/^[a-zA-Z0-9_-]*$/), {
+        message: "Slug should be character a-z, A-Z, number, - and _",
+      }),
+    tmdbId: z.string({
+      message: "TMDB ID is required",
+    }),
+    name: z
+      .string({
+        message: "Name is required",
+      })
+      .min(1),
+    logo: z
+      .string({
+        message: "Logo must be a string",
+      })
+      .optional(),
+    originCountry: z
+      .string({
+        message: "Origin Country must be a string",
+      })
+      .optional(),
+    description: z
+      .string({
+        message: "Description must be a string",
+      })
+      .optional(),
+    status: z
+      .enum(STATUS_TYPE, {
+        message: "only published, draft, rejected and in_review are accepted",
+      })
+      .optional(),
+    metaTitle: z
+      .string({
+        message: "Meta Title must be a string",
+      })
+      .optional(),
+    metaDescription: z
+      .string({
+        message: "Meta Description must be a string",
+      })
+      .optional(),
+  })
 
 export type CreateProductionCompany = z.infer<
   typeof createProductionCompanySchema
