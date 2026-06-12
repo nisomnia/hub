@@ -1,6 +1,10 @@
 import { relations } from "drizzle-orm"
 import { pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core"
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod"
 import { z } from "zod"
 
 import { articleAuthors, articleEditors } from "./article"
@@ -24,6 +28,7 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectUserSchema = createSelectSchema(users)
 export const insertUserSchema = createInsertSchema(users)
 export const updateUserSchema = createUpdateSchema(users)
 

@@ -7,7 +7,11 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core"
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod"
 import { z } from "zod"
 
 import { genres } from "./genre"
@@ -57,6 +61,7 @@ export const movies = pgTable("movies", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectMovieSchema = createSelectSchema(movies)
 export const insertMovieSchema = createInsertSchema(movies)
 export const updateMovieSchema = createUpdateSchema(movies)
 
@@ -83,6 +88,7 @@ export const movieGenres = pgTable(
   }),
 )
 
+export const selectMovieGenreSchema = createSelectSchema(movieGenres)
 export const insertMovieGenreSchema = createInsertSchema(movieGenres)
 export const updateMovieGenreSchema = createUpdateSchema(movieGenres)
 
@@ -114,6 +120,7 @@ export const movieOverviews = pgTable(
   }),
 )
 
+export const selectMovieOverviewSchema = createSelectSchema(movieOverviews)
 export const insertMovieOverviewSchema = createInsertSchema(movieOverviews)
 export const updateMovieOverviewSchema = createUpdateSchema(movieOverviews)
 
@@ -145,6 +152,9 @@ export const movieProductionCompanies = pgTable(
   }),
 )
 
+export const selectMovieProductionCompanySchema = createSelectSchema(
+  movieProductionCompanies,
+)
 export const insertMovieProductionCompanySchema = createInsertSchema(
   movieProductionCompanies,
 )

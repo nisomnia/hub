@@ -1,6 +1,10 @@
 import { relations } from "drizzle-orm"
 import { pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core"
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod"
 import { z } from "zod"
 
 import { languageEnum } from "./language"
@@ -22,6 +26,7 @@ export const overviews = pgTable("overviews", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectOverviewSchema = createSelectSchema(overviews)
 export const insertOverviewSchema = createInsertSchema(overviews)
 export const updateOverviewSchema = createUpdateSchema(overviews)
 

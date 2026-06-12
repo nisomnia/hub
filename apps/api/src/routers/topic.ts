@@ -7,6 +7,8 @@ import { articleTopics } from "../db/schema/article"
 import { languageType } from "../db/schema/language"
 import {
   insertTopicSchema,
+  selectTopicSchema,
+  selectTopicTranslationSchema,
   topics,
   topicTranslations,
   topicVisibility,
@@ -33,10 +35,27 @@ const createTopicSchema = insertTopicSchema
 
 const editTopicSchema = updateTopicSchema.extend({ id: z.string() })
 
+const topicTranslationDetailOutput = selectTopicTranslationSchema.extend({
+  topics: z.array(selectTopicSchema),
+})
+
+const topicByArticleCountOutput = z.object({
+  id: z.string(),
+  title: z.string(),
+  slug: z.string(),
+  language: z.string(),
+  count: z.number(),
+})
+
+const topicSitemapOutput = z.object({
+  slug: z.string(),
+  updatedAt: z.date().nullable(),
+})
+
 const _createTopic = os
   .route({ method: "POST", path: "/topic/create" })
   .input(createTopicSchema)
-  .output(z.array(z.any()))
+  .output(z.array(selectTopicSchema))
   .handler(async ({ input }) => {
     const slug = input.slug ?? (await generateUniqueTopicSlug(input.title))
     const generatedMetaTitle = input.metaTitle ?? input.title
@@ -63,7 +82,7 @@ export const topicRouter = {
   topicTranslationById: os
     .route({ method: "GET", path: "/topic/topic-translation-by-id/{id}" })
     .input(idInputSchema)
-    .output(z.any().nullable())
+    .output(topicTranslationDetailOutput.nullable())
     .handler(async ({ input }) => {
       const translation = firstOrNull(
         await db
@@ -85,7 +104,7 @@ export const topicRouter = {
   topicDashboard: os
     .route({ method: "POST", path: "/topic/dashboard" })
     .input(pageSchema.extend({ language: languageType }))
-    .output(z.array(z.any()))
+    .output(z.array(selectTopicSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -98,7 +117,7 @@ export const topicRouter = {
   topicById: os
     .route({ method: "GET", path: "/topic/by-id/{id}" })
     .input(idInputSchema)
-    .output(z.any().nullable())
+    .output(selectTopicSchema.nullable())
     .handler(async ({ input }) =>
       firstOrNull(
         await db.select().from(topics).where(eq(topics.id, input.id)).limit(1),
@@ -107,7 +126,7 @@ export const topicRouter = {
   topicByLanguage: os
     .route({ method: "POST", path: "/topic/by-language" })
     .input(pageSchema.extend({ language: languageType }))
-    .output(z.array(z.any()))
+    .output(z.array(selectTopicSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -125,7 +144,7 @@ export const topicRouter = {
   topicByArticleCount: os
     .route({ method: "POST", path: "/topic/by-article-count" })
     .input(pageSchema.extend({ language: languageType }))
-    .output(z.array(z.any()))
+    .output(z.array(topicByArticleCountOutput))
     .handler(({ input }) =>
       db
         .select({
@@ -152,7 +171,7 @@ export const topicRouter = {
   topicSitemap: os
     .route({ method: "POST", path: "/topic/sitemap" })
     .input(pageSchema.extend({ language: languageType }))
-    .output(z.array(z.any()))
+    .output(z.array(topicSitemapOutput))
     .handler(({ input }) =>
       db
         .select({ slug: topics.slug, updatedAt: topics.updatedAt })
@@ -175,7 +194,7 @@ export const topicRouter = {
         visibility: topicVisibility,
       }),
     )
-    .output(z.array(z.any()))
+    .output(z.array(selectTopicSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -194,7 +213,7 @@ export const topicRouter = {
   topicBySlug: os
     .route({ method: "GET", path: "/topic/by-slug/{slug}" })
     .input(z.object({ slug: z.string() }))
-    .output(z.any().nullable())
+    .output(selectTopicSchema.nullable())
     .handler(async ({ input }) =>
       firstOrNull(
         await db
@@ -207,7 +226,7 @@ export const topicRouter = {
   topicSearch: os
     .route({ method: "POST", path: "/topic/search" })
     .input(searchSchema.extend({ language: languageType }))
-    .output(z.array(z.any()))
+    .output(z.array(selectTopicSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -228,7 +247,7 @@ export const topicRouter = {
   topicSearchDashboard: os
     .route({ method: "POST", path: "/topic/search-dashboard" })
     .input(searchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectTopicSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -294,7 +313,7 @@ export const topicRouter = {
   topicUpdate: os
     .route({ method: "POST", path: "/topic/update" })
     .input(editTopicSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectTopicSchema))
     .handler(({ input }) => {
       const { id, ...values } = input
 
@@ -307,7 +326,7 @@ export const topicRouter = {
   topicTranslate: os
     .route({ method: "POST", path: "/topic/translate" })
     .input(createTopicSchema.extend({ topicTranslationId: z.string() }))
-    .output(z.array(z.any()))
+    .output(z.array(selectTopicSchema))
     .handler(async ({ input }) => {
       const slug = input.slug ?? (await generateUniqueTopicSlug(input.title))
       const generatedMetaTitle = input.metaTitle ?? input.title
@@ -328,7 +347,7 @@ export const topicRouter = {
   topicDelete: os
     .route({ method: "POST", path: "/topic/delete" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectTopicSchema))
     .handler(async ({ input }) => {
       await db.delete(articleTopics).where(eq(articleTopics.topicId, input.id))
 

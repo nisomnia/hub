@@ -7,6 +7,7 @@ import {
   feeds,
   feedTopics,
   insertFeedSchema,
+  selectFeedSchema,
   updateFeedSchema,
 } from "../db/schema/feed"
 import { languageType } from "../db/schema/language"
@@ -21,6 +22,25 @@ import {
   pageSchema,
   searchSchema,
 } from "./helpers"
+
+const feedTopicOutput = z.object({
+  id: z.string(),
+  title: z.string(),
+})
+
+const feedDetailOutput = selectFeedSchema.extend({
+  topics: z.array(feedTopicOutput),
+})
+
+const infiniteFeedsOutput = z.object({
+  feeds: z.array(selectFeedSchema),
+  nextCursor: z.date().nullable(),
+})
+
+const feedSitemapOutput = z.object({
+  slug: z.string(),
+  updatedAt: z.date().nullable(),
+})
 
 const createFeedSchema = insertFeedSchema
   .omit({ id: true, slug: true, createdAt: true, updatedAt: true })
@@ -74,7 +94,7 @@ export const feedRouter = {
   feedById: os
     .route({ method: "GET", path: "/feed/by-id/{id}" })
     .input(idInputSchema)
-    .output(z.any().nullable())
+    .output(feedDetailOutput.nullable())
     .handler(async ({ input }) => {
       const feed = firstOrNull(
         await db.select().from(feeds).where(eq(feeds.id, input.id)).limit(1),
@@ -87,7 +107,7 @@ export const feedRouter = {
   feedByLanguage: os
     .route({ method: "POST", path: "/feed/by-language" })
     .input(languagePageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectFeedSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -100,7 +120,7 @@ export const feedRouter = {
   feedByLanguageInfinite: os
     .route({ method: "POST", path: "/feed/by-language-infinite" })
     .input(languageInfiniteSchema)
-    .output(z.any())
+    .output(infiniteFeedsOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select()
@@ -122,7 +142,7 @@ export const feedRouter = {
   feedByTopicId: os
     .route({ method: "POST", path: "/feed/by-topic-id" })
     .input(topicPageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {
       const ids = (await feedIdsByTopic(input.topicId)).map(
         (item) => item.feedId,
@@ -140,7 +160,7 @@ export const feedRouter = {
   feedByTopicIdInfinite: os
     .route({ method: "POST", path: "/feed/by-topic-id-infinite" })
     .input(topicInfiniteSchema)
-    .output(z.any())
+    .output(infiniteFeedsOutput)
     .handler(async ({ input }) => {
       const ids = (await feedIdsByTopic(input.topicId)).map(
         (item) => item.feedId,
@@ -167,7 +187,7 @@ export const feedRouter = {
   feedByOwner: os
     .route({ method: "POST", path: "/feed/by-owner" })
     .input(ownerPageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectFeedSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -182,7 +202,7 @@ export const feedRouter = {
   feedByOwnerInfinite: os
     .route({ method: "POST", path: "/feed/by-owner-infinite" })
     .input(ownerInfiniteSchema)
-    .output(z.any())
+    .output(infiniteFeedsOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select()
@@ -212,7 +232,7 @@ export const feedRouter = {
         currentFeedId: z.string(),
       }),
     )
-    .output(z.any())
+    .output(infiniteFeedsOutput)
     .handler(async ({ input }) => {
       const ids = (await feedIdsByTopic(input.topicId)).map(
         (item) => item.feedId,
@@ -243,7 +263,7 @@ export const feedRouter = {
   feedDashboard: os
     .route({ method: "POST", path: "/feed/dashboard" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectFeedSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -255,7 +275,7 @@ export const feedRouter = {
   feedSitemap: os
     .route({ method: "POST", path: "/feed/sitemap" })
     .input(languagePageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(feedSitemapOutput))
     .handler(({ input }) => {
       return db
         .select({ slug: feeds.slug, updatedAt: feeds.updatedAt })
@@ -292,7 +312,7 @@ export const feedRouter = {
   feedSearch: os
     .route({ method: "POST", path: "/feed/search" })
     .input(feedSearchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectFeedSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -311,7 +331,7 @@ export const feedRouter = {
   feedSearchDashboard: os
     .route({ method: "POST", path: "/feed/search-dashboard" })
     .input(feedSearchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectFeedSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -330,7 +350,7 @@ export const feedRouter = {
   feedCreate: os
     .route({ method: "POST", path: "/feed/create" })
     .input(createFeedSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {
       const feedId = cuid()
       const data = await db
@@ -349,7 +369,7 @@ export const feedRouter = {
   feedUpdate: os
     .route({ method: "POST", path: "/feed/update" })
     .input(editFeedSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {
       const data = await db
         .update(feeds)
@@ -365,7 +385,7 @@ export const feedRouter = {
   feedUpdateWithoutChangeUpdatedDate: os
     .route({ method: "POST", path: "/feed/update-without-change-updated-date" })
     .input(editFeedSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {
       const data = await db
         .update(feeds)
@@ -381,7 +401,7 @@ export const feedRouter = {
   feedDelete: os
     .route({ method: "POST", path: "/feed/delete" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {
       await db.delete(feedTopics).where(eq(feedTopics.feedId, input.id))
       return db.delete(feeds).where(eq(feeds.id, input.id)).returning()

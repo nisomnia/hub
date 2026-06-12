@@ -6,6 +6,7 @@ import { db } from "../db"
 import {
   insertProductionCompanySchema,
   productionCompanies,
+  selectProductionCompanySchema,
   updateProductionCompanySchema,
 } from "../db/schema/production-company"
 import { cuid, generateUniqueProductionCompanySlug } from "../lib/utils"
@@ -29,10 +30,15 @@ const editProductionCompanySchema = updateProductionCompanySchema.extend({
   id: z.string(),
 })
 
+const sitemapOutput = z.object({
+  slug: z.string(),
+  updatedAt: z.date().nullable(),
+})
+
 const _createProductionCompany = os
   .route({ method: "POST", path: "/production-company/create" })
   .input(createProductionCompanySchema)
-  .output(z.array(z.any()))
+  .output(z.array(selectProductionCompanySchema))
   .handler(async ({ input }) => {
     const slug = await generateUniqueProductionCompanySlug(input.name)
     const generatedMetaTitle = input.metaTitle ?? input.name
@@ -54,7 +60,7 @@ export const productionCompanyRouter = {
   productionCompanyDashboard: os
     .route({ method: "POST", path: "/production-company/dashboard" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectProductionCompanySchema))
     .handler(({ input }) =>
       db
         .select()
@@ -66,7 +72,7 @@ export const productionCompanyRouter = {
   productionCompanyById: os
     .route({ method: "GET", path: "/production-company/by-id/{id}" })
     .input(idInputSchema)
-    .output(z.any().nullable())
+    .output(selectProductionCompanySchema.nullable())
     .handler(async ({ input }) =>
       firstOrNull(
         await db
@@ -79,7 +85,7 @@ export const productionCompanyRouter = {
   productionCompanyByTmdbId: os
     .route({ method: "GET", path: "/production-company/by-tmdb-id/{tmdbId}" })
     .input(z.object({ tmdbId: z.string() }))
-    .output(z.any().nullable())
+    .output(selectProductionCompanySchema.nullable())
     .handler(async ({ input }) =>
       firstOrNull(
         await db
@@ -92,7 +98,7 @@ export const productionCompanyRouter = {
   productionCompanyBySlug: os
     .route({ method: "GET", path: "/production-company/by-slug/{slug}" })
     .input(z.object({ slug: z.string() }))
-    .output(z.any().nullable())
+    .output(selectProductionCompanySchema.nullable())
     .handler(async ({ input }) =>
       firstOrNull(
         await db
@@ -105,7 +111,7 @@ export const productionCompanyRouter = {
   productionCompanySitemap: os
     .route({ method: "POST", path: "/production-company/sitemap" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(sitemapOutput))
     .handler(({ input }) =>
       db
         .select({
@@ -137,7 +143,7 @@ export const productionCompanyRouter = {
   productionCompanySearch: os
     .route({ method: "POST", path: "/production-company/search" })
     .input(searchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectProductionCompanySchema))
     .handler(({ input }) =>
       db
         .select()
@@ -156,7 +162,7 @@ export const productionCompanyRouter = {
   productionCompanySearchDashboard: os
     .route({ method: "POST", path: "/production-company/search-dashboard" })
     .input(searchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectProductionCompanySchema))
     .handler(({ input }) =>
       db
         .select()
@@ -173,7 +179,7 @@ export const productionCompanyRouter = {
   productionCompanyUpdate: os
     .route({ method: "POST", path: "/production-company/update" })
     .input(editProductionCompanySchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectProductionCompanySchema))
     .handler(({ input }) => {
       const { id, ...values } = input
 
@@ -186,7 +192,7 @@ export const productionCompanyRouter = {
   productionCompanyDelete: os
     .route({ method: "POST", path: "/production-company/delete" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectProductionCompanySchema))
     .handler(({ input }) =>
       db
         .delete(productionCompanies)

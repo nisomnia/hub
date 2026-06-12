@@ -3,7 +3,12 @@ import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import { db } from "../db"
-import { updateUserSchema, userRole, users } from "../db/schema/user"
+import {
+  selectUserSchema,
+  updateUserSchema,
+  userRole,
+  users,
+} from "../db/schema/user"
 import {
   firstOrNull,
   firstValue,
@@ -19,7 +24,7 @@ export const userRouter = {
   userDashboard: os
     .route({ method: "POST", path: "/user/dashboard" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectUserSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -31,7 +36,7 @@ export const userRouter = {
   userById: os
     .route({ method: "GET", path: "/user/by-id/{id}" })
     .input(idInputSchema)
-    .output(z.any().nullable())
+    .output(selectUserSchema.nullable())
     .handler(async ({ input }) => {
       return firstOrNull(
         await db.select().from(users).where(eq(users.id, input.id)).limit(1),
@@ -40,7 +45,7 @@ export const userRouter = {
   userByUsername: os
     .route({ method: "GET", path: "/user/by-username/{username}" })
     .input(z.object({ username: z.string() }))
-    .output(z.any().nullable())
+    .output(selectUserSchema.nullable())
     .handler(async ({ input }) => {
       return firstOrNull(
         await db
@@ -53,7 +58,7 @@ export const userRouter = {
   userByEmail: os
     .route({ method: "GET", path: "/user/by-email/{email}" })
     .input(z.object({ email: z.string() }))
-    .output(z.any().nullable())
+    .output(selectUserSchema.nullable())
     .handler(async ({ input }) => {
       return firstOrNull(
         await db
@@ -66,7 +71,7 @@ export const userRouter = {
   userByRole: os
     .route({ method: "POST", path: "/user/by-role" })
     .input(pageSchema.extend({ role: userRole }))
-    .output(z.array(z.any()))
+    .output(z.array(selectUserSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -85,7 +90,7 @@ export const userRouter = {
   userSearch: os
     .route({ method: "POST", path: "/user/search" })
     .input(searchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectUserSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -102,7 +107,7 @@ export const userRouter = {
   userUpdate: os
     .route({ method: "POST", path: "/user/update" })
     .input(editUserSchema.extend({ currentUserId: z.string() }))
-    .output(z.array(z.any()))
+    .output(z.array(selectUserSchema))
     .handler(async ({ input }) => {
       if (input.id !== input.currentUserId) throw new Error("Unauthorized")
 
@@ -132,7 +137,7 @@ export const userRouter = {
   userUpdateByAdmin: os
     .route({ method: "POST", path: "/user/update-by-admin" })
     .input(editUserSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectUserSchema))
     .handler(async ({ input }) => {
       if (input.username) {
         const existing = firstOrNull(
@@ -160,7 +165,7 @@ export const userRouter = {
   userDelete: os
     .route({ method: "POST", path: "/user/delete" })
     .input(idInputSchema.extend({ currentUserId: z.string() }))
-    .output(z.array(z.any()))
+    .output(z.array(selectUserSchema))
     .handler(({ input }) => {
       if (input.id !== input.currentUserId) throw new Error("Unauthorized")
 
@@ -169,7 +174,7 @@ export const userRouter = {
   userDeleteByAdmin: os
     .route({ method: "POST", path: "/user/delete-by-admin" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectUserSchema))
     .handler(({ input }) => {
       return db.delete(users).where(eq(users.id, input.id)).returning()
     }),

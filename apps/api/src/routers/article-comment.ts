@@ -6,6 +6,7 @@ import { db } from "../db"
 import {
   articleComments,
   insertArticleCommentSchema,
+  selectArticleCommentSchema,
   updateArticleCommentSchema,
 } from "../db/schema/article-comment"
 import { cuid } from "../lib/utils"
@@ -30,11 +31,16 @@ const editArticleCommentSchema = updateArticleCommentSchema.extend({
 
 const byArticleInput = z.object({ articleId: z.string() })
 
+const infiniteOutput = z.object({
+  articleComments: z.array(selectArticleCommentSchema),
+  nextCursor: z.date().nullable(),
+})
+
 export const articleCommentRouter = {
   articleCommentDashboard: os
     .route({ method: "POST", path: "/article-comment/dashboard" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleCommentSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -46,7 +52,7 @@ export const articleCommentRouter = {
   articleCommentByArticleId: os
     .route({ method: "POST", path: "/article-comment/by-article-id" })
     .input(byArticleInput)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleCommentSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -57,7 +63,7 @@ export const articleCommentRouter = {
   articleCommentByArticleIdInfinite: os
     .route({ method: "POST", path: "/article-comment/by-article-id-infinite" })
     .input(byArticleInput.merge(infiniteSchema))
-    .output(z.any())
+    .output(infiniteOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select()
@@ -83,7 +89,7 @@ export const articleCommentRouter = {
   articleCommentById: os
     .route({ method: "GET", path: "/article-comment/by-id/{id}" })
     .input(idInputSchema)
-    .output(z.any().nullable())
+    .output(selectArticleCommentSchema.nullable())
     .handler(async ({ input }) => {
       return firstOrNull(
         await db
@@ -121,7 +127,7 @@ export const articleCommentRouter = {
   articleCommentCreate: os
     .route({ method: "POST", path: "/article-comment/create" })
     .input(createArticleCommentSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleCommentSchema))
     .handler(({ input }) => {
       return db
         .insert(articleComments)
@@ -131,7 +137,7 @@ export const articleCommentRouter = {
   articleCommentUpdate: os
     .route({ method: "POST", path: "/article-comment/update" })
     .input(editArticleCommentSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleCommentSchema))
     .handler(({ input }) => {
       return db
         .update(articleComments)
@@ -142,7 +148,7 @@ export const articleCommentRouter = {
   articleCommentUpdateByAdmin: os
     .route({ method: "POST", path: "/article-comment/update-by-admin" })
     .input(editArticleCommentSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleCommentSchema))
     .handler(({ input }) => {
       return db
         .update(articleComments)
@@ -153,7 +159,7 @@ export const articleCommentRouter = {
   articleCommentDelete: os
     .route({ method: "POST", path: "/article-comment/delete" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleCommentSchema))
     .handler(({ input }) => {
       return db
         .delete(articleComments)
@@ -163,7 +169,7 @@ export const articleCommentRouter = {
   articleCommentDeleteByAdmin: os
     .route({ method: "POST", path: "/article-comment/delete-by-admin" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleCommentSchema))
     .handler(({ input }) => {
       return db
         .delete(articleComments)

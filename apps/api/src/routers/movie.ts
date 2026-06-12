@@ -10,6 +10,7 @@ import {
   movieOverviews,
   movieProductionCompanies,
   movies,
+  selectMovieSchema,
   updateMovieSchema,
 } from "../db/schema/movie"
 import { overviews } from "../db/schema/overview"
@@ -24,6 +25,44 @@ import {
   pageSchema,
   searchSchema,
 } from "./helpers"
+
+const movieGenreOutput = z.object({
+  id: z.string(),
+  title: z.string(),
+  slug: z.string(),
+})
+
+const movieOverviewRowOutput = z.object({
+  id: z.string(),
+  title: z.string(),
+  language: z.string(),
+  content: z.string(),
+})
+
+const movieCompanyOutput = z.object({
+  id: z.string(),
+  name: z.string(),
+  logo: z.string().nullable(),
+})
+
+const movieDetailOutput = selectMovieSchema.extend({
+  overview: z.string().nullable(),
+  overviews: z.array(movieOverviewRowOutput),
+  genres: z.array(movieGenreOutput),
+  productionCompanies: z.array(movieCompanyOutput),
+})
+
+const movieJoinOutput = z.object({ movie: selectMovieSchema })
+
+const infiniteMoviesOutput = z.object({
+  movies: z.array(selectMovieSchema),
+  nextCursor: z.date().nullable(),
+})
+
+const movieSitemapOutput = z.object({
+  slug: z.string(),
+  updatedAt: z.date().nullable(),
+})
 
 const createMovieSchema = insertMovieSchema
   .omit({ id: true, createdAt: true, updatedAt: true })
@@ -121,7 +160,7 @@ async function syncMovieRelations(input: z.infer<typeof editMovieSchema>) {
 const _createMovie = os
   .route({ method: "POST", path: "/movie/create" })
   .input(createMovieSchema)
-  .output(z.array(z.any()))
+  .output(z.array(selectMovieSchema))
   .handler(async ({ input }) => {
     const {
       genres: genreIds,
@@ -183,7 +222,7 @@ export const movieRouter = {
   movieById: os
     .route({ method: "GET", path: "/movie/by-id/{id}" })
     .input(idInputSchema)
-    .output(z.any().nullable())
+    .output(movieDetailOutput.nullable())
     .handler(async ({ input }) => {
       const movie = firstOrNull(
         await db.select().from(movies).where(eq(movies.id, input.id)).limit(1),
@@ -206,7 +245,7 @@ export const movieRouter = {
   movieBySlug: os
     .route({ method: "GET", path: "/movie/by-slug/{slug}" })
     .input(z.object({ slug: z.string() }))
-    .output(z.any().nullable())
+    .output(movieDetailOutput.nullable())
     .handler(async ({ input }) => {
       const movie = firstOrNull(
         await db
@@ -233,7 +272,7 @@ export const movieRouter = {
   movieByTmdbId: os
     .route({ method: "GET", path: "/movie/by-tmdb-id/{tmdbId}" })
     .input(z.object({ tmdbId: z.string() }))
-    .output(z.any().nullable())
+    .output(selectMovieSchema.nullable())
     .handler(async ({ input }) =>
       firstOrNull(
         await db
@@ -246,7 +285,7 @@ export const movieRouter = {
   movieLatest: os
     .route({ method: "POST", path: "/movie/latest" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMovieSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -259,7 +298,7 @@ export const movieRouter = {
   movieLatestInfinite: os
     .route({ method: "POST", path: "/movie/latest-infinite" })
     .input(infiniteSchema)
-    .output(z.any())
+    .output(infiniteMoviesOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select()
@@ -281,7 +320,7 @@ export const movieRouter = {
   movieByGenreId: os
     .route({ method: "POST", path: "/movie/by-genre-id" })
     .input(pageSchema.extend({ genreId: z.string() }))
-    .output(z.array(z.any()))
+    .output(z.array(movieJoinOutput))
     .handler(({ input }) =>
       db
         .select({ movie: movies })
@@ -300,7 +339,7 @@ export const movieRouter = {
   movieByGenreIdInfinite: os
     .route({ method: "POST", path: "/movie/by-genre-id-infinite" })
     .input(infiniteSchema.extend({ genreId: z.string() }))
-    .output(z.any())
+    .output(infiniteMoviesOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select({ movie: movies })
@@ -329,7 +368,7 @@ export const movieRouter = {
   movieByProductionCompanyId: os
     .route({ method: "POST", path: "/movie/by-production-company-id" })
     .input(pageSchema.extend({ productionCompanyId: z.string() }))
-    .output(z.array(z.any()))
+    .output(z.array(movieJoinOutput))
     .handler(({ input }) =>
       db
         .select({ movie: movies })
@@ -351,7 +390,7 @@ export const movieRouter = {
   movieByProductionCompanyIdInfinite: os
     .route({ method: "POST", path: "/movie/by-production-company-id-infinite" })
     .input(infiniteSchema.extend({ productionCompanyId: z.string() }))
-    .output(z.any())
+    .output(infiniteMoviesOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select({ movie: movies })
@@ -391,7 +430,7 @@ export const movieRouter = {
         genreId: z.string(),
       }),
     )
-    .output(z.any())
+    .output(infiniteMoviesOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select({ movie: movies })
@@ -422,7 +461,7 @@ export const movieRouter = {
   movieDashboard: os
     .route({ method: "POST", path: "/movie/dashboard" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMovieSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -434,7 +473,7 @@ export const movieRouter = {
   movieSitemap: os
     .route({ method: "POST", path: "/movie/sitemap" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(movieSitemapOutput))
     .handler(({ input }) =>
       db
         .select({ slug: movies.slug, updatedAt: movies.updatedAt })
@@ -464,7 +503,7 @@ export const movieRouter = {
   movieSearch: os
     .route({ method: "POST", path: "/movie/search" })
     .input(searchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMovieSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -483,7 +522,7 @@ export const movieRouter = {
   movieSearchDashboard: os
     .route({ method: "POST", path: "/movie/search-dashboard" })
     .input(searchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMovieSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -500,7 +539,7 @@ export const movieRouter = {
   movieUpdate: os
     .route({ method: "POST", path: "/movie/update" })
     .input(editMovieSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMovieSchema))
     .handler(async ({ input }) => {
       const {
         genres: genreIds,
@@ -530,7 +569,7 @@ export const movieRouter = {
       path: "/movie/update-without-change-updated-date",
     })
     .input(editMovieSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMovieSchema))
     .handler(async ({ input }) => {
       const {
         genres: genreIds,
@@ -557,7 +596,7 @@ export const movieRouter = {
   movieDelete: os
     .route({ method: "POST", path: "/movie/delete" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMovieSchema))
     .handler(async ({ input }) => {
       await db
         .delete(movieOverviews)

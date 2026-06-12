@@ -1,6 +1,10 @@
 import { relations } from "drizzle-orm"
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod"
 
 import { articles } from "./article"
 import { users } from "./user"
@@ -19,6 +23,7 @@ export const articleComments = pgTable("article_comments", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectArticleCommentSchema = createSelectSchema(articleComments)
 export const insertArticleCommentSchema = createInsertSchema(articleComments)
 export const updateArticleCommentSchema = createUpdateSchema(articleComments)
 

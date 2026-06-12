@@ -6,7 +6,11 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core"
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod"
 import { z } from "zod"
 
 import { languageEnum } from "./language"
@@ -33,6 +37,7 @@ export const feeds = pgTable("feeds", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectFeedSchema = createSelectSchema(feeds)
 export const insertFeedSchema = createInsertSchema(feeds)
 export const updateFeedSchema = createUpdateSchema(feeds)
 
@@ -57,6 +62,7 @@ export const feedTopics = pgTable(
   }),
 )
 
+export const selectFeedTopicSchema = createSelectSchema(feedTopics)
 export const insertFeedTopicSchema = createInsertSchema(feedTopics)
 export const updateFeedTopicSchema = createUpdateSchema(feedTopics)
 

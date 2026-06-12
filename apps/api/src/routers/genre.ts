@@ -6,6 +6,7 @@ import { db } from "../db"
 import {
   genres,
   insertGenreSchema,
+  selectGenreSchema,
   updateGenreSchema,
 } from "../db/schema/genre"
 import { movieGenres } from "../db/schema/movie"
@@ -28,10 +29,22 @@ const createGenreSchema = insertGenreSchema.omit({
 
 const editGenreSchema = updateGenreSchema.extend({ id: z.string() })
 
+const genreByMovieCountOutput = z.object({
+  id: z.string(),
+  title: z.string(),
+  slug: z.string(),
+  count: z.number(),
+})
+
+const genreSitemapOutput = z.object({
+  slug: z.string().nullable(),
+  updatedAt: z.date().nullable(),
+})
+
 const _createGenre = os
   .route({ method: "POST", path: "/genre/create" })
   .input(createGenreSchema)
-  .output(z.array(z.any()))
+  .output(z.array(selectGenreSchema))
   .handler(async ({ input }) => {
     const slug = await generateUniqueGenreSlug(input.title)
     const generatedMetaTitle = input.metaTitle ?? input.title
@@ -53,7 +66,7 @@ export const genreRouter = {
   genreDashboard: os
     .route({ method: "POST", path: "/genre/dashboard" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectGenreSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -65,7 +78,7 @@ export const genreRouter = {
   genreById: os
     .route({ method: "GET", path: "/genre/by-id/{id}" })
     .input(idInputSchema)
-    .output(z.any().nullable())
+    .output(selectGenreSchema.nullable())
     .handler(async ({ input }) =>
       firstOrNull(
         await db.select().from(genres).where(eq(genres.id, input.id)).limit(1),
@@ -74,7 +87,7 @@ export const genreRouter = {
   genreByTmdbId: os
     .route({ method: "GET", path: "/genre/by-tmdb-id/{tmdbId}" })
     .input(z.object({ tmdbId: z.string() }))
-    .output(z.any().nullable())
+    .output(selectGenreSchema.nullable())
     .handler(async ({ input }) =>
       firstOrNull(
         await db
@@ -87,7 +100,7 @@ export const genreRouter = {
   genreByMovieCount: os
     .route({ method: "POST", path: "/genre/by-movie-count" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(genreByMovieCountOutput))
     .handler(({ input }) =>
       db
         .select({
@@ -106,7 +119,7 @@ export const genreRouter = {
   genreSitemap: os
     .route({ method: "POST", path: "/genre/sitemap" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(genreSitemapOutput))
     .handler(({ input }) =>
       db
         .select({ slug: genres.slug, updatedAt: genres.updatedAt })
@@ -118,7 +131,7 @@ export const genreRouter = {
   genreBySlug: os
     .route({ method: "GET", path: "/genre/by-slug/{slug}" })
     .input(z.object({ slug: z.string() }))
-    .output(z.any().nullable())
+    .output(selectGenreSchema.nullable())
     .handler(async ({ input }) =>
       firstOrNull(
         await db
@@ -131,7 +144,7 @@ export const genreRouter = {
   genreSearch: os
     .route({ method: "POST", path: "/genre/search" })
     .input(searchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectGenreSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -150,7 +163,7 @@ export const genreRouter = {
   genreSearchDashboard: os
     .route({ method: "POST", path: "/genre/search-dashboard" })
     .input(searchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectGenreSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -184,7 +197,7 @@ export const genreRouter = {
   genreUpdate: os
     .route({ method: "POST", path: "/genre/update" })
     .input(editGenreSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectGenreSchema))
     .handler(({ input }) => {
       const { id, ...values } = input
 
@@ -197,7 +210,7 @@ export const genreRouter = {
   genreDelete: os
     .route({ method: "POST", path: "/genre/delete" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectGenreSchema))
     .handler(async ({ input }) => {
       await db.delete(movieGenres).where(eq(movieGenres.genreId, input.id))
 

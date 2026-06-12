@@ -6,7 +6,11 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core"
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod"
 import { z } from "zod"
 
 import { articleComments } from "./article-comment"
@@ -30,6 +34,8 @@ export const articleTranslations = pgTable("article_translations", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectArticleTranslationSchema =
+  createSelectSchema(articleTranslations)
 export const insertArticleTranslationSchema =
   createInsertSchema(articleTranslations)
 export const updateArticleTranslationSchema =
@@ -54,6 +60,7 @@ export const articles = pgTable("articles", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectArticleSchema = createSelectSchema(articles)
 export const insertArticleSchema = createInsertSchema(articles)
 export const updateArticleSchema = createUpdateSchema(articles)
 
@@ -92,6 +99,7 @@ export const articleAuthors = pgTable(
   }),
 )
 
+export const selectArticleAuthorSchema = createSelectSchema(articleAuthors)
 export const insertArticleAuthorSchema = createInsertSchema(articleAuthors)
 export const updateArticleAuthorSchema = createUpdateSchema(articleAuthors)
 
@@ -123,6 +131,7 @@ export const articleEditors = pgTable(
   }),
 )
 
+export const selectArticleEditorSchema = createSelectSchema(articleEditors)
 export const insertArticleEditorSchema = createInsertSchema(articleEditors)
 export const updateArticleEditorSchema = createUpdateSchema(articleEditors)
 
@@ -154,6 +163,7 @@ export const articleTopics = pgTable(
   }),
 )
 
+export const selectArticleTopicSchema = createSelectSchema(articleTopics)
 export const insertArticleTopicSchema = createInsertSchema(articleTopics)
 export const updateArticleTopicSchema = createUpdateSchema(articleTopics)
 

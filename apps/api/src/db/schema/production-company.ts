@@ -1,5 +1,9 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod"
 
 import { statusEnum } from "./status"
 
@@ -18,6 +22,8 @@ export const productionCompanies = pgTable("production_companies", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectProductionCompanySchema =
+  createSelectSchema(productionCompanies)
 export const insertProductionCompanySchema =
   createInsertSchema(productionCompanies)
 export const updateProductionCompanySchema =

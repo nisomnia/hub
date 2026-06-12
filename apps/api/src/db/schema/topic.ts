@@ -1,6 +1,10 @@
 import { relations } from "drizzle-orm"
 import { pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core"
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod"
 import { z } from "zod"
 
 import { articleTopics } from "./article"
@@ -20,6 +24,8 @@ export const topicTranslations = pgTable("topic_translations", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectTopicTranslationSchema =
+  createSelectSchema(topicTranslations)
 export const insertTopicTranslationSchema =
   createInsertSchema(topicTranslations)
 export const updateTopicTranslationSchema =
@@ -43,6 +49,7 @@ export const topics = pgTable("topics", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectTopicSchema = createSelectSchema(topics)
 export const insertTopicSchema = createInsertSchema(topics)
 export const updateTopicSchema = createUpdateSchema(topics)
 

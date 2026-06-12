@@ -7,6 +7,7 @@ import {
   insertMediaSchema,
   mediaCategory,
   medias,
+  selectMediaSchema,
   updateMediaSchema,
 } from "../db/schema/media"
 import { cuid } from "../lib/utils"
@@ -28,11 +29,21 @@ const createMediaSchema = insertMediaSchema.omit({
 
 const editMediaSchema = updateMediaSchema.extend({ id: z.string() })
 
+const infiniteOutput = z.object({
+  medias: z.array(selectMediaSchema),
+  nextCursor: z.date().nullable(),
+})
+
+const sitemapOutput = z.object({
+  name: z.string(),
+  updatedAt: z.date().nullable(),
+})
+
 export const mediaRouter = {
   mediaDashboard: os
     .route({ method: "POST", path: "/media/dashboard" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMediaSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -44,7 +55,7 @@ export const mediaRouter = {
   mediaDashboardInfinite: os
     .route({ method: "POST", path: "/media/dashboard-infinite" })
     .input(infiniteSchema)
-    .output(z.any())
+    .output(infiniteOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select()
@@ -61,7 +72,7 @@ export const mediaRouter = {
   mediaDashboardInfiniteByCategory: os
     .route({ method: "POST", path: "/media/dashboard-infinite-by-category" })
     .input(infiniteSchema.extend({ category: mediaCategory }))
-    .output(z.any())
+    .output(infiniteOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select()
@@ -80,7 +91,7 @@ export const mediaRouter = {
   mediaById: os
     .route({ method: "GET", path: "/media/image/by-id/{imageId}" })
     .input(z.object({ imageId: z.string() }))
-    .output(z.any().nullable())
+    .output(selectMediaSchema.nullable())
     .handler(async ({ input }) =>
       firstOrNull(
         await db
@@ -93,7 +104,7 @@ export const mediaRouter = {
   mediaByName: os
     .route({ method: "GET", path: "/media/by-name/{name}" })
     .input(z.object({ name: z.string() }))
-    .output(z.any().nullable())
+    .output(selectMediaSchema.nullable())
     .handler(async ({ input }) =>
       firstOrNull(
         await db
@@ -106,7 +117,7 @@ export const mediaRouter = {
   mediaByAuthorId: os
     .route({ method: "POST", path: "/media/by-author-id" })
     .input(pageSchema.extend({ authorId: z.string() }))
-    .output(z.array(z.any()))
+    .output(z.array(selectMediaSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -119,7 +130,7 @@ export const mediaRouter = {
   mediaSearch: os
     .route({ method: "POST", path: "/media/search" })
     .input(searchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMediaSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -130,7 +141,7 @@ export const mediaRouter = {
   mediaByCategory: os
     .route({ method: "POST", path: "/media/by-category" })
     .input(pageSchema.extend({ category: mediaCategory }))
-    .output(z.array(z.any()))
+    .output(z.array(selectMediaSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -143,7 +154,7 @@ export const mediaRouter = {
   mediaSearchByCategory: os
     .route({ method: "POST", path: "/media/search-by-category" })
     .input(searchSchema.extend({ category: mediaCategory }))
-    .output(z.array(z.any()))
+    .output(z.array(selectMediaSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -156,7 +167,7 @@ export const mediaRouter = {
   mediaSitemap: os
     .route({ method: "POST", path: "/media/sitemap" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(sitemapOutput))
     .handler(({ input }) =>
       db
         .select({ name: medias.name, updatedAt: medias.updatedAt })
@@ -174,7 +185,7 @@ export const mediaRouter = {
   mediaCreate: os
     .route({ method: "POST", path: "/media/create" })
     .input(createMediaSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMediaSchema))
     .handler(({ input }) =>
       db
         .insert(medias)
@@ -184,7 +195,7 @@ export const mediaRouter = {
   mediaUpdate: os
     .route({ method: "POST", path: "/media/update" })
     .input(editMediaSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMediaSchema))
     .handler(({ input }) => {
       const { id, ...values } = input
 
@@ -197,14 +208,14 @@ export const mediaRouter = {
   mediaDeleteById: os
     .route({ method: "POST", path: "/media/delete-by-id" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectMediaSchema))
     .handler(({ input }) =>
       db.delete(medias).where(eq(medias.id, input.id)).returning(),
     ),
   mediaDeleteByName: os
     .route({ method: "POST", path: "/media/delete-by-name" })
     .input(z.object({ name: z.string() }))
-    .output(z.array(z.any()))
+    .output(z.array(selectMediaSchema))
     .handler(({ input }) =>
       db.delete(medias).where(eq(medias.name, input.name)).returning(),
     ),

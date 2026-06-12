@@ -1,5 +1,9 @@
 import { boolean, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core"
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod"
 import { z } from "zod"
 
 export const AD_POSITION = [
@@ -35,6 +39,7 @@ export const ads = pgTable("ads", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectAdSchema = createSelectSchema(ads)
 export const insertAdSchema = createInsertSchema(ads)
 export const updateAdSchema = createUpdateSchema(ads)
 

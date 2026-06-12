@@ -10,6 +10,8 @@ import {
   articleTranslations,
   articles,
   insertArticleSchema,
+  selectArticleSchema,
+  selectArticleTranslationSchema,
   updateArticleSchema,
 } from "../db/schema/article"
 import { languageType } from "../db/schema/language"
@@ -25,6 +27,45 @@ import {
   pageSchema,
   searchSchema,
 } from "./helpers"
+
+const articleTopicOutput = z.object({
+  id: z.string(),
+  title: z.string(),
+  slug: z.string(),
+})
+
+const articleAuthorOutput = z.object({
+  id: z.string(),
+  name: z.string().nullable(),
+  username: z.string(),
+})
+
+const articleEditorOutput = z.object({
+  id: z.string(),
+  name: z.string().nullable(),
+})
+
+const articleDetailOutput = selectArticleSchema.extend({
+  topics: z.array(articleTopicOutput),
+  authors: z.array(articleAuthorOutput),
+  editors: z.array(articleEditorOutput),
+})
+
+const articleTranslationDetailOutput = selectArticleTranslationSchema.extend({
+  articles: z.array(selectArticleSchema),
+})
+
+const articleJoinOutput = z.object({ article: selectArticleSchema })
+
+const infiniteArticlesOutput = z.object({
+  articles: z.array(selectArticleSchema),
+  nextCursor: z.date().nullable(),
+})
+
+const articleSitemapOutput = z.object({
+  slug: z.string(),
+  updatedAt: z.date().nullable(),
+})
 
 const createArticleSchema = insertArticleSchema
   .omit({
@@ -51,7 +92,7 @@ const editArticleSchema = updateArticleSchema.extend({
 const _createArticle = os
   .route({ method: "POST", path: "/article/create" })
   .input(createArticleSchema)
-  .output(z.array(z.any()))
+  .output(z.array(selectArticleSchema))
   .handler(async ({ input }) => {
     const slug = input.slug ?? (await generateUniqueArticleSlug(input.title))
     const generatedExcerpt = input.excerpt ?? trimText(input.content, 160)
@@ -107,7 +148,7 @@ export const articleRouter = {
   articleTranslationById: os
     .route({ method: "GET", path: "/article/article-translation-by-id/{id}" })
     .input(idInputSchema)
-    .output(z.any().nullable())
+    .output(articleTranslationDetailOutput.nullable())
     .handler(async ({ input }) => {
       const translation = firstOrNull(
         await db
@@ -129,7 +170,7 @@ export const articleRouter = {
   articleById: os
     .route({ method: "GET", path: "/article/by-id/{id}" })
     .input(idInputSchema)
-    .output(z.any().nullable())
+    .output(articleDetailOutput.nullable())
     .handler(async ({ input }) => {
       const article = firstOrNull(
         await db
@@ -167,7 +208,7 @@ export const articleRouter = {
   articleBySlug: os
     .route({ method: "GET", path: "/article/by-slug/{slug}" })
     .input(z.object({ slug: z.string() }))
-    .output(z.any().nullable())
+    .output(articleDetailOutput.nullable())
     .handler(async ({ input }) => {
       const article = firstOrNull(
         await db
@@ -205,7 +246,7 @@ export const articleRouter = {
   articleByLanguage: os
     .route({ method: "POST", path: "/article/by-language" })
     .input(pageSchema.extend({ language: languageType }))
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -223,7 +264,7 @@ export const articleRouter = {
   articleByLanguageInfinite: os
     .route({ method: "POST", path: "/article/by-language-infinite" })
     .input(infiniteSchema.extend({ language: languageType }))
-    .output(z.any())
+    .output(infiniteArticlesOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select()
@@ -249,7 +290,7 @@ export const articleRouter = {
   articleByTopicId: os
     .route({ method: "POST", path: "/article/by-topic-id" })
     .input(pageSchema.extend({ language: languageType, topicId: z.string() }))
-    .output(z.array(z.any()))
+    .output(z.array(articleJoinOutput))
     .handler(({ input }) =>
       db
         .select({ article: articles })
@@ -271,7 +312,7 @@ export const articleRouter = {
     .input(
       infiniteSchema.extend({ language: languageType, topicId: z.string() }),
     )
-    .output(z.any())
+    .output(infiniteArticlesOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select({ article: articles })
@@ -302,7 +343,7 @@ export const articleRouter = {
   articleByAuthorId: os
     .route({ method: "POST", path: "/article/by-author-id" })
     .input(pageSchema.extend({ authorId: z.string(), language: languageType }))
-    .output(z.array(z.any()))
+    .output(z.array(articleJoinOutput))
     .handler(({ input }) =>
       db
         .select({ article: articles })
@@ -324,7 +365,7 @@ export const articleRouter = {
     .input(
       infiniteSchema.extend({ authorId: z.string(), language: languageType }),
     )
-    .output(z.any())
+    .output(infiniteArticlesOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select({ article: articles })
@@ -361,7 +402,7 @@ export const articleRouter = {
         topicId: z.string(),
       }),
     )
-    .output(z.any())
+    .output(infiniteArticlesOutput)
     .handler(async ({ input }) => {
       const data = await db
         .select({ article: articles })
@@ -394,7 +435,7 @@ export const articleRouter = {
   articleDashboard: os
     .route({ method: "POST", path: "/article/dashboard" })
     .input(pageSchema.extend({ language: languageType }))
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -407,7 +448,7 @@ export const articleRouter = {
   articleSitemap: os
     .route({ method: "POST", path: "/article/sitemap" })
     .input(pageSchema.extend({ language: languageType }))
-    .output(z.array(z.any()))
+    .output(z.array(articleSitemapOutput))
     .handler(({ input }) =>
       db
         .select({ slug: articles.slug, updatedAt: articles.updatedAt })
@@ -474,7 +515,7 @@ export const articleRouter = {
   articleSearch: os
     .route({ method: "POST", path: "/article/search" })
     .input(searchSchema.extend({ language: languageType }))
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -494,7 +535,7 @@ export const articleRouter = {
   articleSearchDashboard: os
     .route({ method: "POST", path: "/article/search-dashboard" })
     .input(searchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleSchema))
     .handler(({ input }) =>
       db
         .select()
@@ -511,7 +552,7 @@ export const articleRouter = {
   articleUpdate: os
     .route({ method: "POST", path: "/article/update" })
     .input(editArticleSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {
       const { authors, editors, id, topics: topicIds, ...values } = input
       const data = await db
@@ -549,7 +590,7 @@ export const articleRouter = {
       path: "/article/update-without-change-updated-date",
     })
     .input(editArticleSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {
       const { authors, editors, id, topics: topicIds, ...values } = input
       const data = await db
@@ -584,7 +625,7 @@ export const articleRouter = {
   articleTranslate: os
     .route({ method: "POST", path: "/article/translate" })
     .input(createArticleSchema.extend({ articleTranslationId: z.string() }))
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {
       const slug = input.slug ?? (await generateUniqueArticleSlug(input.title))
       const generatedExcerpt = input.excerpt ?? trimText(input.content, 160)
@@ -620,7 +661,7 @@ export const articleRouter = {
   articleDelete: os
     .route({ method: "POST", path: "/article/delete" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {
       await db
         .delete(articleTopics)
@@ -637,7 +678,7 @@ export const articleRouter = {
   articleDeleteByAdmin: os
     .route({ method: "POST", path: "/article/delete-by-admin" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {
       await db
         .delete(articleTopics)

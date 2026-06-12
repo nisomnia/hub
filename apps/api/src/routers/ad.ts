@@ -7,6 +7,7 @@ import {
   adPosition,
   ads,
   insertAdSchema,
+  selectAdSchema,
   updateAdSchema,
 } from "../db/schema/ad"
 import { cuid } from "../lib/utils"
@@ -31,7 +32,7 @@ export const adRouter = {
   adDashboard: os
     .route({ method: "POST", path: "/ad/dashboard" })
     .input(pageSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectAdSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -43,7 +44,7 @@ export const adRouter = {
   adById: os
     .route({ method: "GET", path: "/ad/by-id/{id}" })
     .input(idInputSchema)
-    .output(z.any().nullable())
+    .output(selectAdSchema.nullable())
     .handler(async ({ input }) => {
       return firstOrNull(
         await db.select().from(ads).where(eq(ads.id, input.id)).limit(1),
@@ -52,7 +53,7 @@ export const adRouter = {
   adByPosition: os
     .route({ method: "GET", path: "/ad/by-position/{position}" })
     .input(z.object({ position: adPosition }))
-    .output(z.array(z.any()))
+    .output(z.array(selectAdSchema))
     .handler(({ input }) => {
       return db.select().from(ads).where(eq(ads.position, input.position))
     }),
@@ -65,7 +66,7 @@ export const adRouter = {
   adSearch: os
     .route({ method: "POST", path: "/ad/search" })
     .input(searchSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectAdSchema))
     .handler(({ input }) => {
       return db
         .select()
@@ -76,7 +77,7 @@ export const adRouter = {
   adCreate: os
     .route({ method: "POST", path: "/ad/create" })
     .input(createAdSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectAdSchema))
     .handler(({ input }) => {
       return db
         .insert(ads)
@@ -86,7 +87,7 @@ export const adRouter = {
   adUpdate: os
     .route({ method: "POST", path: "/ad/update" })
     .input(editAdSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectAdSchema))
     .handler(({ input }) => {
       return db
         .update(ads)
@@ -97,7 +98,7 @@ export const adRouter = {
   adDelete: os
     .route({ method: "POST", path: "/ad/delete" })
     .input(idInputSchema)
-    .output(z.array(z.any()))
+    .output(z.array(selectAdSchema))
     .handler(({ input }) => {
       return db.delete(ads).where(eq(ads.id, input.id)).returning()
     }),

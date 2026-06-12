@@ -2,7 +2,11 @@
 
 import { relations } from "drizzle-orm"
 import { pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core"
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod"
 import { z } from "zod"
 
 import { users } from "./user"
@@ -50,6 +54,7 @@ export const medias = pgTable("medias", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
+export const selectMediaSchema = createSelectSchema(medias)
 export const insertMediaSchema = createInsertSchema(medias)
 export const updateMediaSchema = createUpdateSchema(medias)
 
