@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 
-import { callHandler, createMockDb, mediaFixture } from "@/test/fixtures"
+import { callHandler, createMockDb, mediaFixture } from "./fixtures"
 
 let mockCallIndex = 0
-let mockReturnValues: any[] = []
+let mockReturnValues: unknown[] = []
 
 vi.mock("@/db", () => ({
   db: createMockDb(() => {

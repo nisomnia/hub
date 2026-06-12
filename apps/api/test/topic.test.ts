@@ -5,10 +5,10 @@ import {
   createMockDb,
   topicFixture,
   topicTranslationFixture,
-} from "@/test/fixtures"
+} from "./fixtures"
 
 let mockCallIndex = 0
-let mockReturnValues: any[] = []
+let mockReturnValues: unknown[] = []
 
 vi.mock("@/db", () => ({
   db: createMockDb(() => {
