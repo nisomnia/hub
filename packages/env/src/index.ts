@@ -8,7 +8,7 @@ export const env = createEnv({
   clientPrefix: "PUBLIC_",
   client: clientSchema,
   runtimeEnv: {
-    APP_ENV: process.env["APP_ENV"] ?? "development",
+    NODE_ENV: process.env["NODE_ENV"] ?? "development",
     DATABASE_URL: process.env["DATABASE_URL"],
     PUBLIC_API_URL: process.env["PUBLIC_API_URL"] ?? "",
   },
