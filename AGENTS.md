@@ -51,6 +51,8 @@ This is a Bun-based monorepo managed by Vite+ with workspaces under `apps/*`,
 ## Code Style
 
 - Never add comments or JSDoc to source code. Code should be self-documenting.
+- Always use `@/` absolute imports (e.g. `from "@/db"`). Never use `../` parent
+  relative imports — enforced by `import/no-relative-parent-imports`.
 
 ## Code Quality & Workflow
 
