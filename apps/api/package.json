@@ -4,6 +4,7 @@
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",
     "dev": "bun run with-env bun --watch src/index.ts",
     "start": "bun run dist/index.js",
+    "test": "vp test --run",
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
@@ -22,6 +23,7 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "drizzle-kit": "^0.31.10",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
