@@ -14,11 +14,15 @@ const parsed = skipValidation
   : schema.safeParse(process.env)
 
 if (!parsed.success) {
-  const formatted = (
-    parsed as { success: false; error: z.ZodError }
-  ).error.flatten().fieldErrors
-  const missing = Object.entries(formatted)
-    .map(([key, errors]) => `  ${key}: ${(errors as string[])?.join(", ")}`)
+  const fieldErrors: Record<string, string[]> = {}
+  for (const issue of (parsed as { success: false; error: z.ZodError }).error
+    .issues) {
+    const key = issue.path.join(".")
+    if (!fieldErrors[key]) fieldErrors[key] = []
+    fieldErrors[key].push(issue.message)
+  }
+  const missing = Object.entries(fieldErrors)
+    .map(([key, errors]) => `  ${key}: ${errors.join(", ")}`)
     .join("\n")
   throw new Error(`[env] Missing or invalid environment variables:\n${missing}`)
 }
