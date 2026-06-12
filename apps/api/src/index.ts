@@ -2,6 +2,8 @@ import { OpenAPIHandler } from "@orpc/openapi/fetch"
 import { onError } from "@orpc/server"
 import { Hono } from "hono"
 
+import { serverPort } from "env/ports"
+
 import { router } from "./routers"
 
 const app = new Hono()
@@ -51,4 +53,7 @@ app.get("/", (c) => {
   return c.text("Hello Hono!")
 })
 
-export default app
+export default {
+  port: serverPort,
+  fetch: app.fetch,
+}

@@ -17,6 +17,7 @@
         "dotenv-cli": "^11.0.0",
         "drizzle-orm": "^0.45.2",
         "drizzle-zod": "^0.8.3",
+        "env": "workspace:*",
         "hono": "^4.12.25",
         "nanoid": "^5.1.11",
         "zod": "catalog:",
