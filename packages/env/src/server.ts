@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { honoServerSchema } from "./schema.ts"
+import { honoServerSchema } from "./schema"
 
 const skipValidation =
   !!process.env["CI"] || process.env["npm_lifecycle_event"] === "lint"

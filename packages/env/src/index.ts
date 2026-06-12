@@ -1,6 +1,6 @@
 import { createEnv } from "@t3-oss/env-core"
 
-import { clientSchema, serverSchema, sharedSchema } from "./schema.ts"
+import { clientSchema, serverSchema, sharedSchema } from "./schema"
 
 export const env = createEnv({
   shared: sharedSchema,
