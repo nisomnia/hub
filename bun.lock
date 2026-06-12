@@ -22,7 +22,9 @@
       },
       "devDependencies": {
         "@types/bun": "catalog:",
+        "@types/node": "catalog:",
         "drizzle-kit": "^0.31.10",
+        "typescript": "catalog:",
       },
     },
     "packages/env": {
