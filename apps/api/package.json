@@ -1,7 +1,9 @@
 {
   "name": "api",
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run dist/index.js"
   },
   "dependencies": {
     "@orpc/openapi": "^1.14.5",
@@ -9,7 +11,7 @@
     "@orpc/zod": "^1.14.5",
     "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.8.3",
-    "hono": "^4.12.23",
+    "hono": "^4.12.25",
     "nanoid": "^5.1.11",
     "zod": "catalog:"
   },
