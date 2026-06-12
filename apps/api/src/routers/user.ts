@@ -2,13 +2,14 @@ import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
-import { db } from "../db"
+import { db } from "@/db"
 import {
   selectUserSchema,
   updateUserSchema,
   userRole,
   users,
-} from "../db/schema/user"
+} from "@/db/schema/user"
+
 import {
   firstOrNull,
   firstValue,

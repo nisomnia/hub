@@ -2,7 +2,7 @@ import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, lt, ne, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
-import { db } from "../db"
+import { db } from "@/db"
 import {
   articleAuthors,
   articleEditors,
@@ -13,11 +13,12 @@ import {
   selectArticleSchema,
   selectArticleTranslationSchema,
   updateArticleSchema,
-} from "../db/schema/article"
-import { languageType } from "../db/schema/language"
-import { topics } from "../db/schema/topic"
-import { users } from "../db/schema/user"
-import { cuid, generateUniqueArticleSlug, trimText } from "../lib/utils"
+} from "@/db/schema/article"
+import { languageType } from "@/db/schema/language"
+import { topics } from "@/db/schema/topic"
+import { users } from "@/db/schema/user"
+import { cuid, generateUniqueArticleSlug, trimText } from "@/lib/utils"
+
 import {
   firstOrNull,
   firstValue,

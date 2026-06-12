@@ -2,14 +2,15 @@ import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
-import { db } from "../db"
+import { db } from "@/db"
 import {
   insertProductionCompanySchema,
   productionCompanies,
   selectProductionCompanySchema,
   updateProductionCompanySchema,
-} from "../db/schema/production-company"
-import { cuid, generateUniqueProductionCompanySlug } from "../lib/utils"
+} from "@/db/schema/production-company"
+import { cuid, generateUniqueProductionCompanySlug } from "@/lib/utils"
+
 import {
   firstOrNull,
   firstValue,

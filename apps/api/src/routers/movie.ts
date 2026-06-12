@@ -2,8 +2,8 @@ import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, lt, ne, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
-import { db } from "../db"
-import { genres } from "../db/schema/genre"
+import { db } from "@/db"
+import { genres } from "@/db/schema/genre"
 import {
   insertMovieSchema,
   movieGenres,
@@ -12,10 +12,11 @@ import {
   movies,
   selectMovieSchema,
   updateMovieSchema,
-} from "../db/schema/movie"
-import { overviews } from "../db/schema/overview"
-import { productionCompanies } from "../db/schema/production-company"
-import { cuid, generateUniqueMovieSlug } from "../lib/utils"
+} from "@/db/schema/movie"
+import { overviews } from "@/db/schema/overview"
+import { productionCompanies } from "@/db/schema/production-company"
+import { cuid, generateUniqueMovieSlug } from "@/lib/utils"
+
 import {
   firstOrNull,
   firstValue,

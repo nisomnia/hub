@@ -25,13 +25,13 @@ export function slugify(text: string): string {
 
 import { eq } from "drizzle-orm"
 
-import { db } from "../db/index.ts"
-import { articles } from "../db/schema/article.ts"
-import { feeds } from "../db/schema/feed.ts"
-import { genres } from "../db/schema/genre.ts"
-import { movies } from "../db/schema/movie.ts"
-import { productionCompanies } from "../db/schema/production-company.ts"
-import { topics } from "../db/schema/topic.ts"
+import { db } from "@/db/index"
+import { articles } from "@/db/schema/article"
+import { feeds } from "@/db/schema/feed"
+import { genres } from "@/db/schema/genre"
+import { movies } from "@/db/schema/movie"
+import { productionCompanies } from "@/db/schema/production-company"
+import { topics } from "@/db/schema/topic"
 
 export async function generateUniqueArticleSlug(text: string): Promise<string> {
   const base = slugify(text)

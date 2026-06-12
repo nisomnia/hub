@@ -2,17 +2,18 @@ import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, lt, ne, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
-import { db } from "../db"
+import { db } from "@/db"
 import {
   feeds,
   feedTopics,
   insertFeedSchema,
   selectFeedSchema,
   updateFeedSchema,
-} from "../db/schema/feed"
-import { languageType } from "../db/schema/language"
-import { topics } from "../db/schema/topic"
-import { cuid, generateUniqueFeedSlug } from "../lib/utils"
+} from "@/db/schema/feed"
+import { languageType } from "@/db/schema/language"
+import { topics } from "@/db/schema/topic"
+import { cuid, generateUniqueFeedSlug } from "@/lib/utils"
+
 import {
   firstOrNull,
   firstValue,

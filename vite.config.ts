@@ -128,7 +128,7 @@ export default defineConfig({
       "for-direction": "error",
       "getter-return": "off",
       "import/consistent-type-specifier-style": "off",
-      "import/no-relative-parent-imports": "off",
+      "import/no-relative-parent-imports": "error",
       "no-array-constructor": "error",
       "no-async-promise-executor": "error",
       "no-case-declarations": "error",
@@ -322,6 +322,7 @@ export default defineConfig({
           "**/tests/**/*.tsx",
         ],
         rules: {
+          "import/no-relative-parent-imports": "off",
           "require-await": "off",
           "typescript/require-await": "off",
           "typescript/no-explicit-any": "off",

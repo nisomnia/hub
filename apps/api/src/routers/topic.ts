@@ -2,9 +2,9 @@ import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
-import { db } from "../db"
-import { articleTopics } from "../db/schema/article"
-import { languageType } from "../db/schema/language"
+import { db } from "@/db"
+import { articleTopics } from "@/db/schema/article"
+import { languageType } from "@/db/schema/language"
 import {
   insertTopicSchema,
   selectTopicSchema,
@@ -13,8 +13,9 @@ import {
   topicTranslations,
   topicVisibility,
   updateTopicSchema,
-} from "../db/schema/topic"
-import { cuid, generateUniqueTopicSlug } from "../lib/utils"
+} from "@/db/schema/topic"
+import { cuid, generateUniqueTopicSlug } from "@/lib/utils"
+
 import {
   firstOrNull,
   firstValue,

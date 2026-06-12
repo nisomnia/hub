@@ -2,14 +2,15 @@ import { os } from "@orpc/server"
 import { and, count, desc, eq, lt, sql } from "drizzle-orm"
 import { z } from "zod"
 
-import { db } from "../db"
+import { db } from "@/db"
 import {
   articleComments,
   insertArticleCommentSchema,
   selectArticleCommentSchema,
   updateArticleCommentSchema,
-} from "../db/schema/article-comment"
-import { cuid } from "../lib/utils"
+} from "@/db/schema/article-comment"
+import { cuid } from "@/lib/utils"
+
 import {
   firstOrNull,
   firstValue,

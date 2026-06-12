@@ -2,15 +2,16 @@ import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
-import { db } from "../db"
+import { db } from "@/db"
 import {
   genres,
   insertGenreSchema,
   selectGenreSchema,
   updateGenreSchema,
-} from "../db/schema/genre"
-import { movieGenres } from "../db/schema/movie"
-import { cuid, generateUniqueGenreSlug } from "../lib/utils"
+} from "@/db/schema/genre"
+import { movieGenres } from "@/db/schema/movie"
+import { cuid, generateUniqueGenreSlug } from "@/lib/utils"
+
 import {
   firstOrNull,
   firstValue,
