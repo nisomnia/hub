@@ -1,5 +1,16 @@
 import { os } from "@orpc/server"
-import { and, count, desc, eq, ilike, lt, ne, or, sql } from "drizzle-orm"
+import {
+  and,
+  count,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  lt,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm"
 import { z } from "zod"
 
 import { db } from "@/db"
@@ -144,46 +155,40 @@ export const feedRouter = {
     .route({ method: "POST", path: "/feed/by-topic-id" })
     .input(topicPageSchema)
     .output(z.array(selectFeedSchema))
-    .handler(async ({ input }) => {
-      const ids = (await feedIdsByTopic(input.topicId)).map(
-        (item) => item.feedId,
-      )
-      const data = await db
+    .handler(({ input }) => {
+      return db
         .select()
         .from(feeds)
-        .where(eq(feeds.language, input.language))
+        .where(
+          and(
+            eq(feeds.language, input.language),
+            inArray(feeds.id, feedIdsByTopic(input.topicId)),
+          ),
+        )
         .limit(input.perPage)
         .offset(offsetFromPage(input))
         .orderBy(desc(feeds.updatedAt))
-
-      return data.filter((feed) => ids.includes(feed.id))
     }),
   feedByTopicIdInfinite: os
     .route({ method: "POST", path: "/feed/by-topic-id-infinite" })
     .input(topicInfiniteSchema)
     .output(infiniteFeedsOutput)
     .handler(async ({ input }) => {
-      const ids = (await feedIdsByTopic(input.topicId)).map(
-        (item) => item.feedId,
-      )
       const data = await db
         .select()
         .from(feeds)
         .where(
-          input.cursor
-            ? and(
-                eq(feeds.language, input.language),
-                lt(feeds.updatedAt, input.cursor),
-              )
-            : eq(feeds.language, input.language),
+          and(
+            eq(feeds.language, input.language),
+            inArray(feeds.id, feedIdsByTopic(input.topicId)),
+            input.cursor ? lt(feeds.updatedAt, input.cursor) : undefined,
+          ),
         )
         .limit(input.limit + 1)
         .orderBy(desc(feeds.updatedAt))
-      const filtered = data.filter((feed) => ids.includes(feed.id))
-      const nextItem =
-        filtered.length > input.limit ? filtered.pop() : undefined
+      const nextItem = data.length > input.limit ? data.pop() : undefined
 
-      return { feeds: filtered, nextCursor: nextItem?.updatedAt ?? null }
+      return { feeds: data, nextCursor: nextItem?.updatedAt ?? null }
     }),
   feedByOwner: os
     .route({ method: "POST", path: "/feed/by-owner" })
@@ -235,31 +240,22 @@ export const feedRouter = {
     )
     .output(infiniteFeedsOutput)
     .handler(async ({ input }) => {
-      const ids = (await feedIdsByTopic(input.topicId)).map(
-        (item) => item.feedId,
-      )
       const data = await db
         .select()
         .from(feeds)
         .where(
-          input.cursor
-            ? and(
-                eq(feeds.language, input.language),
-                ne(feeds.id, input.currentFeedId),
-                lt(feeds.updatedAt, input.cursor),
-              )
-            : and(
-                eq(feeds.language, input.language),
-                ne(feeds.id, input.currentFeedId),
-              ),
+          and(
+            eq(feeds.language, input.language),
+            ne(feeds.id, input.currentFeedId),
+            inArray(feeds.id, feedIdsByTopic(input.topicId)),
+            input.cursor ? lt(feeds.updatedAt, input.cursor) : undefined,
+          ),
         )
         .limit(input.limit + 1)
         .orderBy(desc(feeds.updatedAt))
-      const filtered = data.filter((feed) => ids.includes(feed.id))
-      const nextItem =
-        filtered.length > input.limit ? filtered.pop() : undefined
+      const nextItem = data.length > input.limit ? data.pop() : undefined
 
-      return { feeds: filtered, nextCursor: nextItem?.updatedAt ?? null }
+      return { feeds: data, nextCursor: nextItem?.updatedAt ?? null }
     }),
   feedDashboard: os
     .route({ method: "POST", path: "/feed/dashboard" })
@@ -372,14 +368,15 @@ export const feedRouter = {
     .input(editFeedSchema)
     .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {
+      const { id: feedId, topics: feedTopicsInput, ...feedValues } = input
       const data = await db
         .update(feeds)
-        .set({ ...input, updatedAt: sql`CURRENT_TIMESTAMP` })
-        .where(eq(feeds.id, input.id))
+        .set({ ...feedValues, updatedAt: sql`CURRENT_TIMESTAMP` })
+        .where(eq(feeds.id, feedId))
         .returning()
 
-      await db.delete(feedTopics).where(eq(feedTopics.feedId, input.id))
-      await insertFeedTopics(input.id, input.topics)
+      await db.delete(feedTopics).where(eq(feedTopics.feedId, feedId))
+      await insertFeedTopics(feedId, feedTopicsInput)
 
       return data
     }),
@@ -388,14 +385,15 @@ export const feedRouter = {
     .input(editFeedSchema)
     .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {
+      const { id: feedId, topics: _feedTopics, ...feedValues } = input
       const data = await db
         .update(feeds)
-        .set(input)
-        .where(eq(feeds.id, input.id))
+        .set(feedValues)
+        .where(eq(feeds.id, feedId))
         .returning()
 
-      await db.delete(feedTopics).where(eq(feedTopics.feedId, input.id))
-      await insertFeedTopics(input.id, input.topics)
+      await db.delete(feedTopics).where(eq(feedTopics.feedId, feedId))
+      await insertFeedTopics(feedId, _feedTopics)
 
       return data
     }),
@@ -404,7 +402,9 @@ export const feedRouter = {
     .input(idInputSchema)
     .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {
-      await db.delete(feedTopics).where(eq(feedTopics.feedId, input.id))
-      return db.delete(feeds).where(eq(feeds.id, input.id)).returning()
+      return await db.transaction(async (tx) => {
+        await tx.delete(feedTopics).where(eq(feedTopics.feedId, input.id))
+        return tx.delete(feeds).where(eq(feeds.id, input.id)).returning()
+      })
     }),
 }

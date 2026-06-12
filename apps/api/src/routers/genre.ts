@@ -213,8 +213,10 @@ export const genreRouter = {
     .input(idInputSchema)
     .output(z.array(selectGenreSchema))
     .handler(async ({ input }) => {
-      await db.delete(movieGenres).where(eq(movieGenres.genreId, input.id))
+      return await db.transaction(async (tx) => {
+        await tx.delete(movieGenres).where(eq(movieGenres.genreId, input.id))
 
-      return db.delete(genres).where(eq(genres.id, input.id)).returning()
+        return tx.delete(genres).where(eq(genres.id, input.id)).returning()
+      })
     }),
 }

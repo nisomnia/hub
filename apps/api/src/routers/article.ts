@@ -664,33 +664,37 @@ export const articleRouter = {
     .input(idInputSchema)
     .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {
-      await db
-        .delete(articleTopics)
-        .where(eq(articleTopics.articleId, input.id))
-      await db
-        .delete(articleAuthors)
-        .where(eq(articleAuthors.articleId, input.id))
-      await db
-        .delete(articleEditors)
-        .where(eq(articleEditors.articleId, input.id))
+      return await db.transaction(async (tx) => {
+        await tx
+          .delete(articleTopics)
+          .where(eq(articleTopics.articleId, input.id))
+        await tx
+          .delete(articleAuthors)
+          .where(eq(articleAuthors.articleId, input.id))
+        await tx
+          .delete(articleEditors)
+          .where(eq(articleEditors.articleId, input.id))
 
-      return db.delete(articles).where(eq(articles.id, input.id)).returning()
+        return tx.delete(articles).where(eq(articles.id, input.id)).returning()
+      })
     }),
   articleDeleteByAdmin: os
     .route({ method: "POST", path: "/article/delete-by-admin" })
     .input(idInputSchema)
     .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {
-      await db
-        .delete(articleTopics)
-        .where(eq(articleTopics.articleId, input.id))
-      await db
-        .delete(articleAuthors)
-        .where(eq(articleAuthors.articleId, input.id))
-      await db
-        .delete(articleEditors)
-        .where(eq(articleEditors.articleId, input.id))
+      return await db.transaction(async (tx) => {
+        await tx
+          .delete(articleTopics)
+          .where(eq(articleTopics.articleId, input.id))
+        await tx
+          .delete(articleAuthors)
+          .where(eq(articleAuthors.articleId, input.id))
+        await tx
+          .delete(articleEditors)
+          .where(eq(articleEditors.articleId, input.id))
 
-      return db.delete(articles).where(eq(articles.id, input.id)).returning()
+        return tx.delete(articles).where(eq(articles.id, input.id)).returning()
+      })
     }),
 }

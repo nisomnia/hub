@@ -110,7 +110,7 @@ export const articleCommentRouter = {
     }),
   articleCommentCountByArticleId: os
     .route({ method: "POST", path: "/article-comment/count-by-article-id" })
-    .input(idInputSchema)
+    .input(byArticleInput)
     .output(z.number())
     .handler(async ({ input }) => {
       return firstValue(
@@ -119,7 +119,7 @@ export const articleCommentRouter = {
           .from(articleComments)
           .where(
             and(
-              eq(articleComments.id, input.id),
+              eq(articleComments.articleId, input.articleId),
               eq(articleComments.replyToId, ""),
             ),
           ),

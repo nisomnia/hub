@@ -124,7 +124,7 @@ describe("articleCommentCountByArticleId", () => {
     mockCallIndex = 0
     mockReturnValues = [[{ value: 5 }]]
     const result = await callHandler(articleCommentCountByArticleId, {
-      id: "article_001",
+      articleId: "article_001",
     })
     expect(result).toBe(5)
   })

@@ -117,6 +117,7 @@ async function syncMovieRelations(input: z.infer<typeof editMovieSchema>) {
     genres: genreIds,
     id,
     overview,
+    originalLanguage,
     productionCompanies: companyIds,
   } = input
 
@@ -134,7 +135,7 @@ async function syncMovieRelations(input: z.infer<typeof editMovieSchema>) {
         title: input.title ?? id,
         type: "movie",
         content: overview,
-        language: "en",
+        language: (originalLanguage as "id" | "en") ?? "en",
       })
       .returning()
     await db
@@ -193,7 +194,7 @@ const _createMovie = os
           title: input.title,
           type: "movie",
           content: overview,
-          language: "en",
+          language: (values.originalLanguage as "id" | "en") ?? "en",
         })
         .returning()
       await db
@@ -599,14 +600,16 @@ export const movieRouter = {
     .input(idInputSchema)
     .output(z.array(selectMovieSchema))
     .handler(async ({ input }) => {
-      await db
-        .delete(movieOverviews)
-        .where(eq(movieOverviews.movieId, input.id))
-      await db.delete(movieGenres).where(eq(movieGenres.movieId, input.id))
-      await db
-        .delete(movieProductionCompanies)
-        .where(eq(movieProductionCompanies.movieId, input.id))
+      return await db.transaction(async (tx) => {
+        await tx
+          .delete(movieOverviews)
+          .where(eq(movieOverviews.movieId, input.id))
+        await tx.delete(movieGenres).where(eq(movieGenres.movieId, input.id))
+        await tx
+          .delete(movieProductionCompanies)
+          .where(eq(movieProductionCompanies.movieId, input.id))
 
-      return db.delete(movies).where(eq(movies.id, input.id)).returning()
+        return tx.delete(movies).where(eq(movies.id, input.id)).returning()
+      })
     }),
 }

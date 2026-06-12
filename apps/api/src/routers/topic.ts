@@ -350,8 +350,12 @@ export const topicRouter = {
     .input(idInputSchema)
     .output(z.array(selectTopicSchema))
     .handler(async ({ input }) => {
-      await db.delete(articleTopics).where(eq(articleTopics.topicId, input.id))
+      return await db.transaction(async (tx) => {
+        await tx
+          .delete(articleTopics)
+          .where(eq(articleTopics.topicId, input.id))
 
-      return db.delete(topics).where(eq(topics.id, input.id)).returning()
+        return tx.delete(topics).where(eq(topics.id, input.id)).returning()
+      })
     }),
 }

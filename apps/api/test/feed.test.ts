@@ -122,7 +122,7 @@ describe("feedByTopicId", () => {
   it("returns feeds filtered by topic id", async () => {
     const feed = feedFixture({ id: "feed_001" })
     mockCallIndex = 0
-    mockReturnValues = [[{ feedId: "feed_001" }], [feed]]
+    mockReturnValues = [[feed]]
     const result = await callHandler(feedByTopicId, {
       language: "id",
       topicId: "topic_001",
@@ -139,10 +139,7 @@ describe("feedByTopicIdInfinite", () => {
     const f2 = feedFixture({ id: "feed_002" })
     const f3 = feedFixture({ id: "feed_003" })
     mockCallIndex = 0
-    mockReturnValues = [
-      [{ feedId: "feed_001" }, { feedId: "feed_002" }, { feedId: "feed_003" }],
-      [f1, f2, f3],
-    ]
+    mockReturnValues = [[f1, f2, f3]]
     const result = await callHandler(feedByTopicIdInfinite, {
       language: "id",
       topicId: "topic_001",
@@ -155,7 +152,7 @@ describe("feedByTopicIdInfinite", () => {
   it("returns feeds with null nextCursor when no overflow after filter", async () => {
     const f1 = feedFixture({ id: "feed_001" })
     mockCallIndex = 0
-    mockReturnValues = [[{ feedId: "feed_001" }], [f1]]
+    mockReturnValues = [[f1]]
     const result = await callHandler(feedByTopicIdInfinite, {
       language: "id",
       topicId: "topic_001",
@@ -168,7 +165,7 @@ describe("feedByTopicIdInfinite", () => {
   it("returns feeds with cursor filter", async () => {
     const f1 = feedFixture({ id: "feed_001" })
     mockCallIndex = 0
-    mockReturnValues = [[{ feedId: "feed_001" }], [f1]]
+    mockReturnValues = [[f1]]
     const result = await callHandler(feedByTopicIdInfinite, {
       language: "id",
       topicId: "topic_001",
@@ -246,10 +243,7 @@ describe("feedRelatedInfinite", () => {
     const f2 = feedFixture({ id: "feed_002" })
     const f3 = feedFixture({ id: "feed_003" })
     mockCallIndex = 0
-    mockReturnValues = [
-      [{ feedId: "feed_001" }, { feedId: "feed_002" }, { feedId: "feed_003" }],
-      [f1, f2, f3],
-    ]
+    mockReturnValues = [[f1, f2, f3]]
     const result = await callHandler(feedRelatedInfinite, {
       language: "id",
       topicId: "topic_001",
@@ -263,7 +257,7 @@ describe("feedRelatedInfinite", () => {
   it("returns related feeds with null nextCursor when no overflow", async () => {
     const f1 = feedFixture({ id: "feed_001" })
     mockCallIndex = 0
-    mockReturnValues = [[{ feedId: "feed_001" }], [f1]]
+    mockReturnValues = [[f1]]
     const result = await callHandler(feedRelatedInfinite, {
       language: "id",
       topicId: "topic_001",
@@ -277,7 +271,7 @@ describe("feedRelatedInfinite", () => {
   it("returns related feeds with cursor filter", async () => {
     const f1 = feedFixture({ id: "feed_001" })
     mockCallIndex = 0
-    mockReturnValues = [[{ feedId: "feed_001" }], [f1]]
+    mockReturnValues = [[f1]]
     const result = await callHandler(feedRelatedInfinite, {
       language: "id",
       topicId: "topic_001",
