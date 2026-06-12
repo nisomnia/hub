@@ -32,4 +32,5 @@ export const honoEnv = parsed.data
 export const appEnv = parsed.data.NODE_ENV
 export const databaseUrl = parsed.data.DATABASE_URL
 export const apiUrl = parsed.data.PUBLIC_API_URL
+export const apiSpecUrl = `${parsed.data.PUBLIC_API_URL}/public/spec.json`
 export const serverPort = parsed.data.SERVER_PORT

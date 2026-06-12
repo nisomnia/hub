@@ -1,11 +1,21 @@
 {
   "name": "api",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client-types": {
+      "types": "./dist/client-types.d.ts"
+    }
+  },
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",
     "dev": "bun run with-env bun --watch src/index.ts",
     "start": "bun run dist/index.js",
     "test": "vp test --run",
-    "with-env": "dotenv -e ../../.env --"
+    "with-env": "dotenv -e ../../.env --",
+    "generate-client-types": "bun run with-env bun scripts/generate-client-types.mts"
   },
   "dependencies": {
     "@orpc/openapi": "^1.14.5",
@@ -23,6 +33,7 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "drizzle-kit": "^0.31.10",
+    "openapi-typescript": "^7.13.0",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }
