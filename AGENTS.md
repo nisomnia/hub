@@ -48,6 +48,10 @@ This is a Bun-based monorepo managed by Vite+ with workspaces under `apps/*`,
 | `vp run -r test`  | Run tests in all workspace packages recursively           |
 | `vp run -r build` | Build all workspace packages recursively                  |
 
+## Code Style
+
+- Never add comments or JSDoc to source code. Code should be self-documenting.
+
 ## Code Quality & Workflow
 
 ### Staged Hooks (Pre-commit)
