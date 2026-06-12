@@ -4,8 +4,13 @@
     "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
+    "@orpc/openapi": "^1.14.5",
+    "@orpc/server": "^1.14.5",
+    "@orpc/zod": "^1.14.5",
     "drizzle-orm": "^0.45.2",
+    "drizzle-zod": "^0.8.3",
     "hono": "^4.12.23",
+    "nanoid": "^5.1.11",
     "zod": "^4.4.3"
   },
   "devDependencies": {

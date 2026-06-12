@@ -14,7 +14,11 @@
     "prepare": "vp config"
   },
   "dependencies": {
+    "@orpc/openapi": "^1.14.5",
+    "@orpc/server": "^1.14.5",
+    "@orpc/zod": "^1.14.5",
     "drizzle-zod": "^0.8.3",
+    "nanoid": "^5.1.11",
     "postgres": "^3.4.9"
   },
   "devDependencies": {
