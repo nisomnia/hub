@@ -10,9 +10,9 @@
   ],
   "type": "module",
   "scripts": {
-    "build": "vp run build",
+    "build": "echo 'root build skipped'",
     "dev": "vp run -r dev",
-    "start": "vp run start",
+    "start": "vp run -r start",
     "prepare": "vp config",
     "ready": "vp check && vp run -r test && vp run -r build"
   },
@@ -28,9 +28,14 @@
   },
   "packageManager": "bun@1.3.14",
   "catalog": {
+    "@oslojs/crypto": "^1.0.1",
+    "@oslojs/encoding": "^1.1.0",
     "@types/bun": "^1.3.14",
     "@types/node": "^25.6.2",
+    "arctic": "^2.2.2",
     "dotenv-cli": "^11.0.0",
+    "drizzle-orm": "^0.45.2",
+    "drizzle-zod": "^0.8.3",
     "typescript": "^6.0.3",
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
     "vite-plus": "latest",

@@ -17,10 +17,20 @@ export function createMockDb<T>(getValue: () => T): unknown {
 }
 
 export function callHandler(
-  procedure: Parameters<typeof call>[0],
+  procedure: unknown,
   input: Record<string, unknown>,
+  context?: Record<string, unknown> | null,
 ) {
-  return call(procedure, input)
+  const resolvedContext =
+    context === null
+      ? undefined
+      : (context ?? { user: userFixture({ role: "admin" }) })
+
+  return call(
+    procedure as Parameters<typeof call>[0],
+    input,
+    resolvedContext ? { context: resolvedContext } : undefined,
+  )
 }
 
 export function adFixture(overrides: Record<string, unknown> = {}) {

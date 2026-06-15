@@ -329,6 +329,12 @@ export default defineConfig({
           "no-unused-vars": "off",
         },
       },
+      {
+        files: ["packages/auth/src/session.ts", "packages/auth/src/types.ts"],
+        rules: {
+          "typescript/no-explicit-any": "off",
+        },
+      },
     ],
   },
   run: {

@@ -1,7 +1,7 @@
-import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
+import { os, requireAuthorOrAdminMiddleware } from "@/auth/orpc"
 import { db } from "@/db"
 import {
   genres,
@@ -44,6 +44,7 @@ const genreSitemapOutput = z.object({
 
 const _createGenre = os
   .route({ method: "POST", path: "/genre/create" })
+  .use(requireAuthorOrAdminMiddleware)
   .input(createGenreSchema)
   .output(z.array(selectGenreSchema))
   .handler(async ({ input }) => {
@@ -66,6 +67,7 @@ const _createGenre = os
 export const genreRouter = {
   genreDashboard: os
     .route({ method: "POST", path: "/genre/dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(pageSchema)
     .output(z.array(selectGenreSchema))
     .handler(({ input }) =>
@@ -163,6 +165,7 @@ export const genreRouter = {
     ),
   genreSearchDashboard: os
     .route({ method: "POST", path: "/genre/search-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(searchSchema)
     .output(z.array(selectGenreSchema))
     .handler(({ input }) =>
@@ -190,6 +193,7 @@ export const genreRouter = {
     ),
   genreCountDashboard: os
     .route({ method: "GET", path: "/genre/count-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .output(z.number())
     .handler(async () =>
       firstValue(await db.select({ value: count() }).from(genres)),
@@ -197,6 +201,7 @@ export const genreRouter = {
   genreCreate: _createGenre,
   genreUpdate: os
     .route({ method: "POST", path: "/genre/update" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(editGenreSchema)
     .output(z.array(selectGenreSchema))
     .handler(({ input }) => {
@@ -210,6 +215,7 @@ export const genreRouter = {
     }),
   genreDelete: os
     .route({ method: "POST", path: "/genre/delete" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(idInputSchema)
     .output(z.array(selectGenreSchema))
     .handler(async ({ input }) => {

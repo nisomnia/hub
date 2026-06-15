@@ -5,6 +5,7 @@ import {
   createMockDb,
   topicFixture,
   topicTranslationFixture,
+  userFixture,
 } from "./fixtures"
 
 let mockCallIndex = 0
@@ -76,6 +77,26 @@ describe("topicDashboard", () => {
       perPage: 10,
     })
     expect(result).toEqual([t])
+  })
+
+  it("requires authentication", async () => {
+    await expect(
+      callHandler(
+        topicDashboard,
+        { language: "id", page: 1, perPage: 10 },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("requires author or admin role", async () => {
+    await expect(
+      callHandler(
+        topicDashboard,
+        { language: "id", page: 1, perPage: 10 },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
   })
 })
 
@@ -205,6 +226,26 @@ describe("topicSearchDashboard", () => {
     })
     expect(result).toEqual([t])
   })
+
+  it("requires authentication", async () => {
+    await expect(
+      callHandler(
+        topicSearchDashboard,
+        { searchQuery: "Test", limit: 10 },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("requires author or admin role", async () => {
+    await expect(
+      callHandler(
+        topicSearchDashboard,
+        { searchQuery: "Test", limit: 10 },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
 })
 
 describe("topicCount", () => {
@@ -229,6 +270,18 @@ describe("topicCountDashboard", () => {
     mockReturnValues = [[{ value: 15 }]]
     const result = await callHandler(topicCountDashboard, {})
     expect(result).toBe(15)
+  })
+
+  it("requires authentication", async () => {
+    await expect(callHandler(topicCountDashboard, {}, null)).rejects.toThrow(
+      "Authentication required",
+    )
+  })
+
+  it("requires author or admin role", async () => {
+    await expect(
+      callHandler(topicCountDashboard, {}, { user: userFixture() }),
+    ).rejects.toThrow("Author or admin access required")
   })
 })
 
@@ -256,6 +309,22 @@ describe("topicCountByLanguageDashboard", () => {
       language: "id",
     })
     expect(result).toBe(8)
+  })
+
+  it("requires authentication", async () => {
+    await expect(
+      callHandler(topicCountByLanguageDashboard, { language: "id" }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("requires author or admin role", async () => {
+    await expect(
+      callHandler(
+        topicCountByLanguageDashboard,
+        { language: "id" },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
   })
 })
 
@@ -290,6 +359,38 @@ describe("topicCreate", () => {
     })
     expect(result).toEqual([t])
   })
+
+  it("requires authentication", async () => {
+    await expect(
+      callHandler(
+        topicCreate,
+        {
+          title: "New Topic",
+          description: "Desc",
+          language: "id",
+          status: "published",
+          visibility: "public",
+        },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("requires author or admin role", async () => {
+    await expect(
+      callHandler(
+        topicCreate,
+        {
+          title: "New Topic",
+          description: "Desc",
+          language: "id",
+          status: "published",
+          visibility: "public",
+        },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
 })
 
 describe("topicUpdate", () => {
@@ -302,6 +403,26 @@ describe("topicUpdate", () => {
       title: "Updated Topic",
     })
     expect(result).toEqual([t])
+  })
+
+  it("requires authentication", async () => {
+    await expect(
+      callHandler(
+        topicUpdate,
+        { id: "topic_001", title: "Updated Topic" },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("requires author or admin role", async () => {
+    await expect(
+      callHandler(
+        topicUpdate,
+        { id: "topic_001", title: "Updated Topic" },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
   })
 })
 
@@ -342,6 +463,40 @@ describe("topicTranslate", () => {
     })
     expect(result).toEqual([t])
   })
+
+  it("requires authentication", async () => {
+    await expect(
+      callHandler(
+        topicTranslate,
+        {
+          title: "Translated Topic",
+          description: "Desc",
+          language: "en",
+          status: "published",
+          visibility: "public",
+          topicTranslationId: "tt_001",
+        },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("requires author or admin role", async () => {
+    await expect(
+      callHandler(
+        topicTranslate,
+        {
+          title: "Translated Topic",
+          description: "Desc",
+          language: "en",
+          status: "published",
+          visibility: "public",
+          topicTranslationId: "tt_001",
+        },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
 })
 
 describe("topicDelete", () => {
@@ -351,5 +506,17 @@ describe("topicDelete", () => {
     mockReturnValues = [undefined, [t]]
     const result = await callHandler(topicDelete, { id: t.id })
     expect(result).toEqual([t])
+  })
+
+  it("requires authentication", async () => {
+    await expect(
+      callHandler(topicDelete, { id: "topic_001" }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("requires author or admin role", async () => {
+    await expect(
+      callHandler(topicDelete, { id: "topic_001" }, { user: userFixture() }),
+    ).rejects.toThrow("Author or admin access required")
   })
 })

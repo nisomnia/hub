@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 
-import { callHandler, createMockDb, productionCompanyFixture } from "./fixtures"
+import {
+  callHandler,
+  createMockDb,
+  productionCompanyFixture,
+  userFixture,
+} from "./fixtures"
 
 let mockCallIndex = 0
 let mockReturnValues: unknown[] = []
@@ -42,6 +47,22 @@ describe("productionCompanyDashboard", () => {
       perPage: 10,
     })
     expect(result).toEqual([pc])
+  })
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(productionCompanyDashboard, { page: 1, perPage: 10 }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(
+        productionCompanyDashboard,
+        { page: 1, perPage: 10 },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
   })
 })
 
@@ -115,6 +136,18 @@ describe("productionCompanyCountDashboard", () => {
     const result = await callHandler(productionCompanyCountDashboard, {})
     expect(result).toBe(10)
   })
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(productionCompanyCountDashboard, {}, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(productionCompanyCountDashboard, {}, { user: userFixture() }),
+    ).rejects.toThrow("Author or admin access required")
+  })
 })
 
 describe("productionCompanySearch", () => {
@@ -141,6 +174,26 @@ describe("productionCompanySearchDashboard", () => {
     })
     expect(result).toEqual([pc])
   })
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        productionCompanySearchDashboard,
+        { searchQuery: "Studio", limit: 10 },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(
+        productionCompanySearchDashboard,
+        { searchQuery: "Studio", limit: 10 },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
 })
 
 describe("productionCompanyCreate", () => {
@@ -159,6 +212,36 @@ describe("productionCompanyCreate", () => {
     })
     expect(result).toEqual([pc])
   })
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        productionCompanyCreate,
+        {
+          name: "New Studio",
+          tmdbId: "1",
+          description: "Desc",
+          status: "published",
+        },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(
+        productionCompanyCreate,
+        {
+          name: "New Studio",
+          tmdbId: "1",
+          description: "Desc",
+          status: "published",
+        },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
 })
 
 describe("productionCompanyUpdate", () => {
@@ -172,6 +255,26 @@ describe("productionCompanyUpdate", () => {
     })
     expect(result).toEqual([pc])
   })
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        productionCompanyUpdate,
+        { id: "pc_001", name: "Updated Studio" },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(
+        productionCompanyUpdate,
+        { id: "pc_001", name: "Updated Studio" },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
 })
 
 describe("productionCompanyDelete", () => {
@@ -181,5 +284,21 @@ describe("productionCompanyDelete", () => {
     mockReturnValues = [[pc]]
     const result = await callHandler(productionCompanyDelete, { id: "pc_001" })
     expect(result).toEqual([pc])
+  })
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(productionCompanyDelete, { id: "pc_001" }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(
+        productionCompanyDelete,
+        { id: "pc_001" },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
   })
 })

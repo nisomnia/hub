@@ -1,7 +1,11 @@
-import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, lt, ne, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
+import {
+  os,
+  requireAdminMiddleware,
+  requireAuthorOrAdminMiddleware,
+} from "@/auth/orpc"
 import { db } from "@/db"
 import {
   articleAuthors,
@@ -92,6 +96,7 @@ const editArticleSchema = updateArticleSchema.extend({
 
 const _createArticle = os
   .route({ method: "POST", path: "/article/create" })
+  .use(requireAuthorOrAdminMiddleware)
   .input(createArticleSchema)
   .output(z.array(selectArticleSchema))
   .handler(async ({ input }) => {
@@ -117,22 +122,22 @@ const _createArticle = os
         excerpt: generatedExcerpt,
         metaTitle: generatedMetaTitle,
         metaDescription: generatedMetaDescription,
-        articleTranslationId: articleTranslation[0].id,
+        articleTranslationId: articleTranslation[0]!.id,
       })
       .returning()
 
     const topicValues = input.topics.map((topic) => ({
-      articleId: data[0].id,
+      articleId: data[0]!.id,
       topicId: topic,
     }))
 
     const authorValues = input.authors.map((author) => ({
-      articleId: data[0].id,
+      articleId: data[0]!.id,
       userId: author,
     }))
 
     const editorValues = input.editors.map((editor) => ({
-      articleId: data[0].id,
+      articleId: data[0]!.id,
       userId: editor,
     }))
 
@@ -435,6 +440,7 @@ export const articleRouter = {
     }),
   articleDashboard: os
     .route({ method: "POST", path: "/article/dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(pageSchema.extend({ language: languageType }))
     .output(z.array(selectArticleSchema))
     .handler(({ input }) =>
@@ -477,6 +483,7 @@ export const articleRouter = {
     ),
   articleCountDashboard: os
     .route({ method: "GET", path: "/article/count-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .output(z.number())
     .handler(async () =>
       firstValue(await db.select({ value: count() }).from(articles)),
@@ -503,6 +510,7 @@ export const articleRouter = {
       method: "GET",
       path: "/article/count-by-language-dashboard/{language}",
     })
+    .use(requireAuthorOrAdminMiddleware)
     .input(z.object({ language: languageType }))
     .output(z.number())
     .handler(async ({ input }) =>
@@ -535,6 +543,7 @@ export const articleRouter = {
     ),
   articleSearchDashboard: os
     .route({ method: "POST", path: "/article/search-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(searchSchema)
     .output(z.array(selectArticleSchema))
     .handler(({ input }) =>
@@ -552,6 +561,7 @@ export const articleRouter = {
   articleCreate: _createArticle,
   articleUpdate: os
     .route({ method: "POST", path: "/article/update" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(editArticleSchema)
     .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {
@@ -590,6 +600,7 @@ export const articleRouter = {
       method: "POST",
       path: "/article/update-without-change-updated-date",
     })
+    .use(requireAuthorOrAdminMiddleware)
     .input(editArticleSchema)
     .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {
@@ -625,6 +636,7 @@ export const articleRouter = {
     }),
   articleTranslate: os
     .route({ method: "POST", path: "/article/translate" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(createArticleSchema.extend({ articleTranslationId: z.string() }))
     .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {
@@ -661,6 +673,7 @@ export const articleRouter = {
     }),
   articleDelete: os
     .route({ method: "POST", path: "/article/delete" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(idInputSchema)
     .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {
@@ -680,6 +693,7 @@ export const articleRouter = {
     }),
   articleDeleteByAdmin: os
     .route({ method: "POST", path: "/article/delete-by-admin" })
+    .use(requireAdminMiddleware)
     .input(idInputSchema)
     .output(z.array(selectArticleSchema))
     .handler(async ({ input }) => {

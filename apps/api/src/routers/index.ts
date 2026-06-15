@@ -1,4 +1,5 @@
 import { adRouter } from "./ad"
+import { adminRouter } from "./admin"
 import { articleRouter } from "./article"
 import { articleCommentRouter } from "./article-comment"
 import { feedRouter } from "./feed"
@@ -10,6 +11,7 @@ import { topicRouter } from "./topic"
 import { userRouter } from "./user"
 
 export const router = {
+  ...adminRouter,
   ...adRouter,
   ...articleCommentRouter,
   ...articleRouter,

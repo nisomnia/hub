@@ -1,7 +1,7 @@
-import { os } from "@orpc/server"
 import { count, desc, eq, ilike, sql } from "drizzle-orm"
 import { z } from "zod"
 
+import { os, requireAuthorOrAdminMiddleware } from "@/auth/orpc"
 import { db } from "@/db"
 import {
   insertMediaSchema,
@@ -43,6 +43,7 @@ const sitemapOutput = z.object({
 export const mediaRouter = {
   mediaDashboard: os
     .route({ method: "POST", path: "/media/dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(pageSchema)
     .output(z.array(selectMediaSchema))
     .handler(({ input }) =>
@@ -55,6 +56,7 @@ export const mediaRouter = {
     ),
   mediaDashboardInfinite: os
     .route({ method: "POST", path: "/media/dashboard-infinite" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(infiniteSchema)
     .output(infiniteOutput)
     .handler(async ({ input }) => {
@@ -72,6 +74,7 @@ export const mediaRouter = {
     }),
   mediaDashboardInfiniteByCategory: os
     .route({ method: "POST", path: "/media/dashboard-infinite-by-category" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(infiniteSchema.extend({ category: mediaCategory }))
     .output(infiniteOutput)
     .handler(async ({ input }) => {
@@ -185,6 +188,7 @@ export const mediaRouter = {
     ),
   mediaCreate: os
     .route({ method: "POST", path: "/media/create" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(createMediaSchema)
     .output(z.array(selectMediaSchema))
     .handler(({ input }) =>
@@ -195,6 +199,7 @@ export const mediaRouter = {
     ),
   mediaUpdate: os
     .route({ method: "POST", path: "/media/update" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(editMediaSchema)
     .output(z.array(selectMediaSchema))
     .handler(({ input }) => {
@@ -208,6 +213,7 @@ export const mediaRouter = {
     }),
   mediaDeleteById: os
     .route({ method: "POST", path: "/media/delete-by-id" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(idInputSchema)
     .output(z.array(selectMediaSchema))
     .handler(({ input }) =>
@@ -215,6 +221,7 @@ export const mediaRouter = {
     ),
   mediaDeleteByName: os
     .route({ method: "POST", path: "/media/delete-by-name" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(z.object({ name: z.string() }))
     .output(z.array(selectMediaSchema))
     .handler(({ input }) =>

@@ -1,4 +1,3 @@
-import { os } from "@orpc/server"
 import {
   and,
   count,
@@ -13,6 +12,7 @@ import {
 } from "drizzle-orm"
 import { z } from "zod"
 
+import { os, requireAuthorOrAdminMiddleware } from "@/auth/orpc"
 import { db } from "@/db"
 import {
   feeds,
@@ -259,6 +259,7 @@ export const feedRouter = {
     }),
   feedDashboard: os
     .route({ method: "POST", path: "/feed/dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(pageSchema)
     .output(z.array(selectFeedSchema))
     .handler(({ input }) => {
@@ -290,6 +291,7 @@ export const feedRouter = {
     ),
   feedCountDashboard: os
     .route({ method: "GET", path: "/feed/count-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .output(z.number())
     .handler(async () =>
       firstValue(await db.select({ value: count() }).from(feeds)),
@@ -327,6 +329,7 @@ export const feedRouter = {
     }),
   feedSearchDashboard: os
     .route({ method: "POST", path: "/feed/search-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(feedSearchSchema)
     .output(z.array(selectFeedSchema))
     .handler(({ input }) => {
@@ -346,6 +349,7 @@ export const feedRouter = {
     }),
   feedCreate: os
     .route({ method: "POST", path: "/feed/create" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(createFeedSchema)
     .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {
@@ -365,6 +369,7 @@ export const feedRouter = {
     }),
   feedUpdate: os
     .route({ method: "POST", path: "/feed/update" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(editFeedSchema)
     .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {
@@ -382,6 +387,7 @@ export const feedRouter = {
     }),
   feedUpdateWithoutChangeUpdatedDate: os
     .route({ method: "POST", path: "/feed/update-without-change-updated-date" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(editFeedSchema)
     .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {
@@ -399,6 +405,7 @@ export const feedRouter = {
     }),
   feedDelete: os
     .route({ method: "POST", path: "/feed/delete" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(idInputSchema)
     .output(z.array(selectFeedSchema))
     .handler(async ({ input }) => {

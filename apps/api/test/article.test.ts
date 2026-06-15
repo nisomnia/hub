@@ -544,4 +544,201 @@ describe("articleDeleteByAdmin", () => {
     })
     expect(result).toEqual([a])
   })
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(articleDeleteByAdmin, { id: "article_001" }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Admin access required for non-admin", async () => {
+    await expect(
+      callHandler(
+        articleDeleteByAdmin,
+        { id: "article_001" },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Admin access required")
+  })
+})
+
+describe("articleCreate auth", () => {
+  const input = {
+    title: "Test Article",
+    content: "Content here",
+    language: "id",
+    status: "published",
+    visibility: "public",
+    featuredImage: "https://example.com/img.jpg",
+    topics: ["topic_001"],
+    authors: ["user_001"],
+    editors: ["user_001"],
+  }
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(callHandler(articleCreate, input, null)).rejects.toThrow(
+      "Authentication required",
+    )
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(articleCreate, input, { user: userFixture() }),
+    ).rejects.toThrow("Author or admin access required")
+  })
+})
+
+describe("articleDashboard auth", () => {
+  const input = { language: "id", page: 1, perPage: 10 }
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(callHandler(articleDashboard, input, null)).rejects.toThrow(
+      "Authentication required",
+    )
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(articleDashboard, input, { user: userFixture() }),
+    ).rejects.toThrow("Author or admin access required")
+  })
+})
+
+describe("articleCountDashboard auth", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(callHandler(articleCountDashboard, {}, null)).rejects.toThrow(
+      "Authentication required",
+    )
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(articleCountDashboard, {}, { user: userFixture() }),
+    ).rejects.toThrow("Author or admin access required")
+  })
+})
+
+describe("articleCountByLanguageDashboard auth", () => {
+  const input = { language: "id" }
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(articleCountByLanguageDashboard, input, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(articleCountByLanguageDashboard, input, {
+        user: userFixture(),
+      }),
+    ).rejects.toThrow("Author or admin access required")
+  })
+})
+
+describe("articleSearchDashboard auth", () => {
+  const input = { searchQuery: "test", limit: 10 }
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(articleSearchDashboard, input, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(articleSearchDashboard, input, { user: userFixture() }),
+    ).rejects.toThrow("Author or admin access required")
+  })
+})
+
+describe("articleUpdate auth", () => {
+  const input = {
+    id: "article_001",
+    title: "Updated Title",
+    topics: ["topic_001"],
+    authors: ["user_001"],
+    editors: ["user_001"],
+  }
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(callHandler(articleUpdate, input, null)).rejects.toThrow(
+      "Authentication required",
+    )
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(articleUpdate, input, { user: userFixture() }),
+    ).rejects.toThrow("Author or admin access required")
+  })
+})
+
+describe("articleUpdateWithoutChangeUpdatedDate auth", () => {
+  const input = {
+    id: "article_001",
+    title: "Updated Title",
+    topics: ["topic_001"],
+    authors: ["user_001"],
+    editors: ["user_001"],
+  }
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(articleUpdateWithoutChangeUpdatedDate, input, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(articleUpdateWithoutChangeUpdatedDate, input, {
+        user: userFixture(),
+      }),
+    ).rejects.toThrow("Author or admin access required")
+  })
+})
+
+describe("articleTranslate auth", () => {
+  const input = {
+    title: "Test Article",
+    content: "Content here",
+    language: "id",
+    status: "published",
+    visibility: "public",
+    featuredImage: "https://example.com/img.jpg",
+    articleTranslationId: "at_001",
+    topics: ["topic_001"],
+    authors: ["user_001"],
+    editors: ["user_001"],
+  }
+
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(callHandler(articleTranslate, input, null)).rejects.toThrow(
+      "Authentication required",
+    )
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(articleTranslate, input, { user: userFixture() }),
+    ).rejects.toThrow("Author or admin access required")
+  })
+})
+
+describe("articleDelete auth", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(articleDelete, { id: "article_001" }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin", async () => {
+    await expect(
+      callHandler(
+        articleDelete,
+        { id: "article_001" },
+        { user: userFixture() },
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
 })

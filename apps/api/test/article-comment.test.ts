@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 
-import { callHandler, createMockDb, articleCommentFixture } from "./fixtures"
+import {
+  callHandler,
+  createMockDb,
+  articleCommentFixture,
+  userFixture,
+} from "./fixtures"
 
 let mockCallIndex = 0
 let mockReturnValues: unknown[] = []
@@ -31,15 +36,38 @@ const {
   articleCommentDeleteByAdmin,
 } = articleCommentRouter
 
+const adminContext = { user: userFixture({ role: "admin" }) }
+const userContext = { user: userFixture() }
+
 describe("articleCommentDashboard", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(articleCommentDashboard, { page: 1, perPage: 10 }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws for non-author/non-admin user", async () => {
+    await expect(
+      callHandler(
+        articleCommentDashboard,
+        { page: 1, perPage: 10 },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("returns paginated article comments ordered by createdAt desc", async () => {
     mockCallIndex = 0
     const comment = articleCommentFixture()
     mockReturnValues = [[comment]]
-    const result = await callHandler(articleCommentDashboard, {
-      page: 1,
-      perPage: 10,
-    })
+    const result = await callHandler(
+      articleCommentDashboard,
+      {
+        page: 1,
+        perPage: 10,
+      },
+      adminContext,
+    )
     expect(result).toEqual([comment])
   })
 })
@@ -131,65 +159,167 @@ describe("articleCommentCountByArticleId", () => {
 })
 
 describe("articleCommentCreate", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        articleCommentCreate,
+        {
+          content: "Test comment",
+          articleId: "article_001",
+          authorId: "user_001",
+        },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
   it("creates a new article comment", async () => {
     mockCallIndex = 0
     const comment = articleCommentFixture()
     mockReturnValues = [[comment]]
-    const result = await callHandler(articleCommentCreate, {
-      content: "Test comment",
-      articleId: "article_001",
-      authorId: "user_001",
-    })
+    const result = await callHandler(
+      articleCommentCreate,
+      {
+        content: "Test comment",
+        articleId: "article_001",
+        authorId: "user_001",
+      },
+      userContext,
+    )
     expect(result).toEqual([comment])
   })
 })
 
 describe("articleCommentUpdate", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        articleCommentUpdate,
+        { id: "comment_001", content: "Updated comment" },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws when user tries to update another comment", async () => {
+    mockCallIndex = 0
+    mockReturnValues = [[articleCommentFixture({ authorId: "user_002" })]]
+    await expect(
+      callHandler(
+        articleCommentUpdate,
+        { id: "comment_001", content: "Updated comment" },
+        userContext,
+      ),
+    ).rejects.toThrow("You can only manage your own comments")
+  })
+
   it("updates an existing article comment", async () => {
     mockCallIndex = 0
     const comment = articleCommentFixture({ content: "Updated comment" })
     mockReturnValues = [[comment]]
-    const result = await callHandler(articleCommentUpdate, {
-      id: "comment_001",
-      content: "Updated comment",
-    })
+    const result = await callHandler(
+      articleCommentUpdate,
+      {
+        id: "comment_001",
+        content: "Updated comment",
+      },
+      userContext,
+    )
     expect(result).toEqual([comment])
   })
 })
 
 describe("articleCommentUpdateByAdmin", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        articleCommentUpdateByAdmin,
+        { id: "comment_001", content: "Admin updated comment" },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws for non-admin user", async () => {
+    await expect(
+      callHandler(
+        articleCommentUpdateByAdmin,
+        { id: "comment_001", content: "Admin updated comment" },
+        userContext,
+      ),
+    ).rejects.toThrow("Admin access required")
+  })
+
   it("updates an article comment as admin", async () => {
     mockCallIndex = 0
     const comment = articleCommentFixture({ content: "Admin updated comment" })
     mockReturnValues = [[comment]]
-    const result = await callHandler(articleCommentUpdateByAdmin, {
-      id: "comment_001",
-      content: "Admin updated comment",
-    })
+    const result = await callHandler(
+      articleCommentUpdateByAdmin,
+      {
+        id: "comment_001",
+        content: "Admin updated comment",
+      },
+      adminContext,
+    )
     expect(result).toEqual([comment])
   })
 })
 
 describe("articleCommentDelete", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(articleCommentDelete, { id: "comment_001" }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws when user tries to delete another comment", async () => {
+    mockCallIndex = 0
+    mockReturnValues = [[articleCommentFixture({ authorId: "user_002" })]]
+    await expect(
+      callHandler(articleCommentDelete, { id: "comment_001" }, userContext),
+    ).rejects.toThrow("You can only manage your own comments")
+  })
+
   it("deletes an article comment", async () => {
     mockCallIndex = 0
     const comment = articleCommentFixture()
     mockReturnValues = [[comment]]
-    const result = await callHandler(articleCommentDelete, {
-      id: "comment_001",
-    })
+    const result = await callHandler(
+      articleCommentDelete,
+      { id: "comment_001" },
+      userContext,
+    )
     expect(result).toEqual([comment])
   })
 })
 
 describe("articleCommentDeleteByAdmin", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(articleCommentDeleteByAdmin, { id: "comment_001" }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws for non-admin user", async () => {
+    await expect(
+      callHandler(
+        articleCommentDeleteByAdmin,
+        { id: "comment_001" },
+        userContext,
+      ),
+    ).rejects.toThrow("Admin access required")
+  })
+
   it("deletes an article comment as admin", async () => {
     mockCallIndex = 0
     const comment = articleCommentFixture()
     mockReturnValues = [[comment]]
-    const result = await callHandler(articleCommentDeleteByAdmin, {
-      id: "comment_001",
-    })
+    const result = await callHandler(
+      articleCommentDeleteByAdmin,
+      { id: "comment_001" },
+      adminContext,
+    )
     expect(result).toEqual([comment])
   })
 })

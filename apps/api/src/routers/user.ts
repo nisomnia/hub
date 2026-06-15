@@ -1,7 +1,9 @@
-import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
+import { AuthError, requireAuth } from "auth"
+
+import { os, requireAdminMiddleware, requireAuthMiddleware } from "@/auth/orpc"
 import { db } from "@/db"
 import {
   selectUserSchema,
@@ -24,64 +26,67 @@ const editUserSchema = updateUserSchema.extend({ id: z.string() })
 export const userRouter = {
   userDashboard: os
     .route({ method: "POST", path: "/user/dashboard" })
+    .use(requireAuthMiddleware)
     .input(pageSchema)
     .output(z.array(selectUserSchema))
-    .handler(({ input }) => {
-      return db
+    .handler(({ input }) =>
+      db
         .select()
         .from(users)
         .limit(input.perPage)
         .offset(offsetFromPage(input))
-        .orderBy(desc(users.createdAt))
-    }),
+        .orderBy(desc(users.createdAt)),
+    ),
   userById: os
     .route({ method: "GET", path: "/user/by-id/{id}" })
+    .use(requireAuthMiddleware)
     .input(idInputSchema)
     .output(selectUserSchema.nullable())
-    .handler(async ({ input }) => {
-      return firstOrNull(
+    .handler(async ({ input }) =>
+      firstOrNull(
         await db.select().from(users).where(eq(users.id, input.id)).limit(1),
-      )
-    }),
+      ),
+    ),
   userByUsername: os
     .route({ method: "GET", path: "/user/by-username/{username}" })
     .input(z.object({ username: z.string() }))
     .output(selectUserSchema.nullable())
-    .handler(async ({ input }) => {
-      return firstOrNull(
+    .handler(async ({ input }) =>
+      firstOrNull(
         await db
           .select()
           .from(users)
           .where(eq(users.username, input.username))
           .limit(1),
-      )
-    }),
+      ),
+    ),
   userByEmail: os
     .route({ method: "GET", path: "/user/by-email/{email}" })
     .input(z.object({ email: z.string() }))
     .output(selectUserSchema.nullable())
-    .handler(async ({ input }) => {
-      return firstOrNull(
+    .handler(async ({ input }) =>
+      firstOrNull(
         await db
           .select()
           .from(users)
           .where(eq(users.email, input.email))
           .limit(1),
-      )
-    }),
+      ),
+    ),
   userByRole: os
     .route({ method: "POST", path: "/user/by-role" })
+    .use(requireAdminMiddleware)
     .input(pageSchema.extend({ role: userRole }))
     .output(z.array(selectUserSchema))
-    .handler(({ input }) => {
-      return db
+    .handler(({ input }) =>
+      db
         .select()
         .from(users)
         .where(eq(users.role, input.role))
         .limit(input.perPage)
         .offset(offsetFromPage(input))
-        .orderBy(desc(users.createdAt))
-    }),
+        .orderBy(desc(users.createdAt)),
+    ),
   userCount: os
     .route({ method: "GET", path: "/user/count" })
     .output(z.number())
@@ -92,8 +97,8 @@ export const userRouter = {
     .route({ method: "POST", path: "/user/search" })
     .input(searchSchema)
     .output(z.array(selectUserSchema))
-    .handler(({ input }) => {
-      return db
+    .handler(({ input }) =>
+      db
         .select()
         .from(users)
         .where(
@@ -103,14 +108,21 @@ export const userRouter = {
             ilike(users.email, `%${input.searchQuery}%`),
           ),
         )
-        .limit(input.limit)
-    }),
+        .limit(input.limit),
+    ),
   userUpdate: os
     .route({ method: "POST", path: "/user/update" })
-    .input(editUserSchema.extend({ currentUserId: z.string() }))
+    .input(editUserSchema)
     .output(z.array(selectUserSchema))
-    .handler(async ({ input }) => {
-      if (input.id !== input.currentUserId) throw new Error("Unauthorized")
+    .handler(async ({ input, context }) => {
+      const user = requireAuth(context.user)
+
+      if (input.id !== user.id)
+        throw new AuthError(
+          "You can only update your own profile",
+          403,
+          "FORBIDDEN",
+        )
 
       if (input.username) {
         const existing = firstOrNull(
@@ -137,6 +149,7 @@ export const userRouter = {
     }),
   userUpdateByAdmin: os
     .route({ method: "POST", path: "/user/update-by-admin" })
+    .use(requireAdminMiddleware)
     .input(editUserSchema)
     .output(z.array(selectUserSchema))
     .handler(async ({ input }) => {
@@ -165,18 +178,26 @@ export const userRouter = {
     }),
   userDelete: os
     .route({ method: "POST", path: "/user/delete" })
-    .input(idInputSchema.extend({ currentUserId: z.string() }))
+    .input(idInputSchema)
     .output(z.array(selectUserSchema))
-    .handler(({ input }) => {
-      if (input.id !== input.currentUserId) throw new Error("Unauthorized")
+    .handler(({ input, context }) => {
+      const user = requireAuth(context.user)
+
+      if (input.id !== user.id)
+        throw new AuthError(
+          "You can only delete your own account",
+          403,
+          "FORBIDDEN",
+        )
 
       return db.delete(users).where(eq(users.id, input.id)).returning()
     }),
   userDeleteByAdmin: os
     .route({ method: "POST", path: "/user/delete-by-admin" })
+    .use(requireAdminMiddleware)
     .input(idInputSchema)
     .output(z.array(selectUserSchema))
-    .handler(({ input }) => {
-      return db.delete(users).where(eq(users.id, input.id)).returning()
-    }),
+    .handler(({ input }) =>
+      db.delete(users).where(eq(users.id, input.id)).returning(),
+    ),
 }

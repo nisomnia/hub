@@ -10,6 +10,7 @@ import {
   movieProductionCompanyFixture,
   overviewFixture,
   productionCompanyFixture,
+  userFixture,
 } from "./fixtures"
 
 let mockCallIndex = 0
@@ -49,6 +50,8 @@ const {
   movieUpdateWithoutChangeUpdatedDate,
   movieDelete,
 } = movieRouter
+
+const userContext = { user: userFixture() }
 
 describe("movieById", () => {
   it("returns movie detail when found", async () => {
@@ -378,6 +381,18 @@ describe("movieRelatedInfinite", () => {
 })
 
 describe("movieDashboard", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(movieDashboard, { page: 1, perPage: 10 }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(movieDashboard, { page: 1, perPage: 10 }, userContext),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("returns paginated movies ordered by updatedAt desc", async () => {
     const m = movieFixture()
     mockCallIndex = 0
@@ -417,6 +432,18 @@ describe("movieCount", () => {
 })
 
 describe("movieCountDashboard", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(callHandler(movieCountDashboard, {}, null)).rejects.toThrow(
+      "Authentication required",
+    )
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(movieCountDashboard, {}, userContext),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("returns count of all movies", async () => {
     mockCallIndex = 0
     mockReturnValues = [[{ value: 10 }]]
@@ -439,6 +466,26 @@ describe("movieSearch", () => {
 })
 
 describe("movieSearchDashboard", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        movieSearchDashboard,
+        { searchQuery: "Test", limit: 10 },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(
+        movieSearchDashboard,
+        { searchQuery: "Test", limit: 10 },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("returns matching movies regardless of status", async () => {
     const m = movieFixture({ status: "draft" })
     mockCallIndex = 0
@@ -452,6 +499,62 @@ describe("movieSearchDashboard", () => {
 })
 
 describe("movieCreate", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        movieCreate,
+        {
+          title: "Test Movie",
+          tmdbId: "12345",
+          originalTitle: "Test Movie Original",
+          tagline: "Best movie ever",
+          slug: "test-movie",
+          airingStatus: "released",
+          originCountry: "US",
+          originalLanguage: "en",
+          spokenLanguages: "en,id",
+          releaseDate: "2026-01-01",
+          revenue: 1000000,
+          runtime: 120,
+          budget: 500000,
+          homepage: "https://example.com",
+          status: "published",
+          metaTitle: "Test Movie Meta",
+          metaDescription: "Test movie description",
+        },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(
+        movieCreate,
+        {
+          title: "Test Movie",
+          tmdbId: "12345",
+          originalTitle: "Test Movie Original",
+          tagline: "Best movie ever",
+          slug: "test-movie",
+          airingStatus: "released",
+          originCountry: "US",
+          originalLanguage: "en",
+          spokenLanguages: "en,id",
+          releaseDate: "2026-01-01",
+          revenue: 1000000,
+          runtime: 120,
+          budget: 500000,
+          homepage: "https://example.com",
+          status: "published",
+          metaTitle: "Test Movie Meta",
+          metaDescription: "Test movie description",
+        },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("creates a movie without overview, genres, or companies", async () => {
     const m = movieFixture()
     mockCallIndex = 0
@@ -480,6 +583,26 @@ describe("movieCreate", () => {
 })
 
 describe("movieUpdate", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        movieUpdate,
+        { id: "movie_001", title: "Updated Movie", originalLanguage: "en" },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(
+        movieUpdate,
+        { id: "movie_001", title: "Updated Movie", originalLanguage: "en" },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("updates a movie without changing relations", async () => {
     const m = movieFixture()
     mockCallIndex = 0
@@ -494,6 +617,26 @@ describe("movieUpdate", () => {
 })
 
 describe("movieUpdateWithoutChangeUpdatedDate", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        movieUpdateWithoutChangeUpdatedDate,
+        { id: "movie_001", title: "Updated Movie", originalLanguage: "en" },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(
+        movieUpdateWithoutChangeUpdatedDate,
+        { id: "movie_001", title: "Updated Movie", originalLanguage: "en" },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("updates a movie without changing updatedAt", async () => {
     const m = movieFixture()
     mockCallIndex = 0
@@ -508,6 +651,18 @@ describe("movieUpdateWithoutChangeUpdatedDate", () => {
 })
 
 describe("movieDelete", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(movieDelete, { id: "movie_001" }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(movieDelete, { id: "movie_001" }, userContext),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("deletes related records and the movie", async () => {
     const m = movieFixture()
     mockCallIndex = 0

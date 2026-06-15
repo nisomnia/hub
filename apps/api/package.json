@@ -12,7 +12,7 @@
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",
     "dev": "bun run with-env bun --watch src/index.ts",
-    "start": "bun run dist/index.js",
+    "start": "bun run with-env bun dist/index.js",
     "test": "vp test --run",
     "with-env": "dotenv -e ../../.env --",
     "generate-client-types": "bun run with-env bun scripts/generate-client-types.mts"
@@ -21,9 +21,11 @@
     "@orpc/openapi": "^1.14.5",
     "@orpc/server": "^1.14.5",
     "@orpc/zod": "^1.14.5",
+    "arctic": "catalog:",
+    "auth": "workspace:*",
     "dotenv-cli": "^11.0.0",
-    "drizzle-orm": "^0.45.2",
-    "drizzle-zod": "^0.8.3",
+    "drizzle-orm": "catalog:",
+    "drizzle-zod": "catalog:",
     "env": "workspace:*",
     "hono": "^4.12.25",
     "nanoid": "^5.1.11",

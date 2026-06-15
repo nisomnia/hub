@@ -1,0 +1,29 @@
+{
+  "name": "auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./session": "./src/session.ts",
+    "./oauth": "./src/oauth.ts",
+    "./guards": "./src/guards.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "test": "vp test",
+    "check": "vp check"
+  },
+  "dependencies": {
+    "@oslojs/crypto": "catalog:",
+    "@oslojs/encoding": "catalog:",
+    "arctic": "catalog:",
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

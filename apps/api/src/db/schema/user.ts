@@ -67,13 +67,11 @@ export const usersRelations = relations(users, ({ many }) => ({
   articleEditors: many(articleEditors),
 }))
 
+export type UserRole = z.infer<typeof userRole>
+
 export type InsertUser = typeof users.$inferInsert
 export type SelectUser = typeof users.$inferSelect
 export type SelectSession = typeof sessions.$inferSelect
-
-export type InsertAccount = typeof accounts.$inferInsert
 export type SelectAccount = typeof accounts.$inferSelect
-
+export type InsertAccount = typeof accounts.$inferInsert
 export type InsertSession = typeof sessions.$inferInsert
-
-export type UserRole = z.infer<typeof userRole>

@@ -1,7 +1,7 @@
-import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
+import { os, requireAuthorOrAdminMiddleware } from "@/auth/orpc"
 import { db } from "@/db"
 import { articleTopics } from "@/db/schema/article"
 import { languageType } from "@/db/schema/language"
@@ -55,6 +55,7 @@ const topicSitemapOutput = z.object({
 
 const _createTopic = os
   .route({ method: "POST", path: "/topic/create" })
+  .use(requireAuthorOrAdminMiddleware)
   .input(createTopicSchema)
   .output(z.array(selectTopicSchema))
   .handler(async ({ input }) => {
@@ -74,7 +75,7 @@ const _createTopic = os
         slug,
         metaTitle: generatedMetaTitle,
         metaDescription: generatedMetaDescription,
-        topicTranslationId: topicTranslation[0].id,
+        topicTranslationId: topicTranslation[0]!.id,
       })
       .returning()
   })
@@ -104,6 +105,7 @@ export const topicRouter = {
     }),
   topicDashboard: os
     .route({ method: "POST", path: "/topic/dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(pageSchema.extend({ language: languageType }))
     .output(z.array(selectTopicSchema))
     .handler(({ input }) =>
@@ -247,6 +249,7 @@ export const topicRouter = {
     ),
   topicSearchDashboard: os
     .route({ method: "POST", path: "/topic/search-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(searchSchema)
     .output(z.array(selectTopicSchema))
     .handler(({ input }) =>
@@ -274,6 +277,7 @@ export const topicRouter = {
     ),
   topicCountDashboard: os
     .route({ method: "GET", path: "/topic/count-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .output(z.number())
     .handler(async () =>
       firstValue(await db.select({ value: count() }).from(topics)),
@@ -300,6 +304,7 @@ export const topicRouter = {
       method: "GET",
       path: "/topic/count-by-language-dashboard/{language}",
     })
+    .use(requireAuthorOrAdminMiddleware)
     .input(z.object({ language: languageType }))
     .output(z.number())
     .handler(async ({ input }) =>
@@ -313,6 +318,7 @@ export const topicRouter = {
   topicCreate: _createTopic,
   topicUpdate: os
     .route({ method: "POST", path: "/topic/update" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(editTopicSchema)
     .output(z.array(selectTopicSchema))
     .handler(({ input }) => {
@@ -326,6 +332,7 @@ export const topicRouter = {
     }),
   topicTranslate: os
     .route({ method: "POST", path: "/topic/translate" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(createTopicSchema.extend({ topicTranslationId: z.string() }))
     .output(z.array(selectTopicSchema))
     .handler(async ({ input }) => {
@@ -347,6 +354,7 @@ export const topicRouter = {
     }),
   topicDelete: os
     .route({ method: "POST", path: "/topic/delete" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(idInputSchema)
     .output(z.array(selectTopicSchema))
     .handler(async ({ input }) => {

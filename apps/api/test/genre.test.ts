@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 
-import { createMockDb, genreFixture, callHandler } from "./fixtures"
+import {
+  createMockDb,
+  genreFixture,
+  callHandler,
+  userFixture,
+} from "./fixtures"
 
 let mockCallIndex = 0
 let mockReturnValues: unknown[] = []
@@ -33,7 +38,21 @@ const {
   genreDelete,
 } = genreRouter
 
+const userContext = { user: userFixture() }
+
 describe("genreDashboard", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(genreDashboard, { page: 1, perPage: 10 }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws for non-author/admin user", async () => {
+    await expect(
+      callHandler(genreDashboard, { page: 1, perPage: 10 }, userContext),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("returns paginated genres ordered by updatedAt desc", async () => {
     const g = genreFixture()
     mockCallIndex = 0
@@ -131,6 +150,26 @@ describe("genreSearch", () => {
 })
 
 describe("genreSearchDashboard", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        genreSearchDashboard,
+        { searchQuery: "Act", limit: 10 },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws for non-author/admin user", async () => {
+    await expect(
+      callHandler(
+        genreSearchDashboard,
+        { searchQuery: "Act", limit: 10 },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("returns matching genres regardless of status", async () => {
     const g = genreFixture({ status: "draft" })
     mockCallIndex = 0
@@ -160,6 +199,18 @@ describe("genreCount", () => {
 })
 
 describe("genreCountDashboard", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(callHandler(genreCountDashboard, {}, null)).rejects.toThrow(
+      "Authentication required",
+    )
+  })
+
+  it("throws for non-author/admin user", async () => {
+    await expect(
+      callHandler(genreCountDashboard, {}, userContext),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("returns count of all genres", async () => {
     mockCallIndex = 0
     mockReturnValues = [[{ value: 10 }]]
@@ -169,6 +220,26 @@ describe("genreCountDashboard", () => {
 })
 
 describe("genreCreate", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        genreCreate,
+        { title: "New Genre", description: "Desc", status: "published" },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws for non-author/admin user", async () => {
+    await expect(
+      callHandler(
+        genreCreate,
+        { title: "New Genre", description: "Desc", status: "published" },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("creates a genre with generated slug", async () => {
     const g = genreFixture({ title: "New Genre", slug: "new-genre" })
     mockCallIndex = 0
@@ -183,6 +254,26 @@ describe("genreCreate", () => {
 })
 
 describe("genreUpdate", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        genreUpdate,
+        { id: "genre_001", title: "Updated Genre" },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws for non-author/admin user", async () => {
+    await expect(
+      callHandler(
+        genreUpdate,
+        { id: "genre_001", title: "Updated Genre" },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("updates a genre", async () => {
     const g = genreFixture({ title: "Updated Genre" })
     mockCallIndex = 0
@@ -196,6 +287,18 @@ describe("genreUpdate", () => {
 })
 
 describe("genreDelete", () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(genreDelete, { id: "genre_001" }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws for non-author/admin user", async () => {
+    await expect(
+      callHandler(genreDelete, { id: "genre_001" }, userContext),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("deletes movieGenres and genre", async () => {
     const g = genreFixture()
     mockCallIndex = 0

@@ -1,7 +1,7 @@
-import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, lt, ne, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
+import { os, requireAuthorOrAdminMiddleware } from "@/auth/orpc"
 import { db } from "@/db"
 import { genres } from "@/db/schema/genre"
 import {
@@ -140,7 +140,7 @@ async function syncMovieRelations(input: z.infer<typeof editMovieSchema>) {
       .returning()
     await db
       .insert(movieOverviews)
-      .values({ movieId: id, overviewId: overviewData[0].id })
+      .values({ movieId: id, overviewId: overviewData[0]!.id })
   }
 
   if (genreIds && genreIds.length > 0) {
@@ -161,6 +161,7 @@ async function syncMovieRelations(input: z.infer<typeof editMovieSchema>) {
 
 const _createMovie = os
   .route({ method: "POST", path: "/movie/create" })
+  .use(requireAuthorOrAdminMiddleware)
   .input(createMovieSchema)
   .output(z.array(selectMovieSchema))
   .handler(async ({ input }) => {
@@ -199,7 +200,7 @@ const _createMovie = os
         .returning()
       await db
         .insert(movieOverviews)
-        .values({ movieId, overviewId: overviewData[0].id })
+        .values({ movieId, overviewId: overviewData[0]!.id })
     }
 
     if (companyIds && companyIds.length > 0) {
@@ -462,6 +463,7 @@ export const movieRouter = {
     }),
   movieDashboard: os
     .route({ method: "POST", path: "/movie/dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(pageSchema)
     .output(z.array(selectMovieSchema))
     .handler(({ input }) =>
@@ -498,6 +500,7 @@ export const movieRouter = {
     ),
   movieCountDashboard: os
     .route({ method: "GET", path: "/movie/count-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .output(z.number())
     .handler(async () =>
       firstValue(await db.select({ value: count() }).from(movies)),
@@ -523,6 +526,7 @@ export const movieRouter = {
     ),
   movieSearchDashboard: os
     .route({ method: "POST", path: "/movie/search-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(searchSchema)
     .output(z.array(selectMovieSchema))
     .handler(({ input }) =>
@@ -540,6 +544,7 @@ export const movieRouter = {
   movieCreate: _createMovie,
   movieUpdate: os
     .route({ method: "POST", path: "/movie/update" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(editMovieSchema)
     .output(z.array(selectMovieSchema))
     .handler(async ({ input }) => {
@@ -570,6 +575,7 @@ export const movieRouter = {
       method: "POST",
       path: "/movie/update-without-change-updated-date",
     })
+    .use(requireAuthorOrAdminMiddleware)
     .input(editMovieSchema)
     .output(z.array(selectMovieSchema))
     .handler(async ({ input }) => {
@@ -597,6 +603,7 @@ export const movieRouter = {
     }),
   movieDelete: os
     .route({ method: "POST", path: "/movie/delete" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(idInputSchema)
     .output(z.array(selectMovieSchema))
     .handler(async ({ input }) => {

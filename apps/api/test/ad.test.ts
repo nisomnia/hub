@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 
-import { callHandler, createMockDb, adFixture } from "./fixtures"
+import { callHandler, createMockDb, adFixture, userFixture } from "./fixtures"
 
 let mockCallIndex = 0
 let mockReturnValues: unknown[] = []
@@ -28,12 +28,31 @@ const {
   adDelete,
 } = adRouter
 
+const adminContext = { user: userFixture({ role: "admin" }) }
+const userContext = { user: userFixture() }
+
 describe("adDashboard", () => {
-  it("returns paginated ads", async () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(adDashboard, { page: 1, perPage: 10 }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws for non-admin user", async () => {
+    await expect(
+      callHandler(adDashboard, { page: 1, perPage: 10 }, userContext),
+    ).rejects.toThrow("Admin access required")
+  })
+
+  it("returns paginated ads for admin", async () => {
     const ad = adFixture()
     mockCallIndex = 0
     mockReturnValues = [[ad]]
-    const result = await callHandler(adDashboard, { page: 1, perPage: 10 })
+    const result = await callHandler(
+      adDashboard,
+      { page: 1, perPage: 10 },
+      adminContext,
+    )
     expect(result).toEqual([ad])
   })
 })
@@ -107,7 +126,39 @@ describe("adSearch", () => {
 })
 
 describe("adCreate", () => {
-  it("creates a new ad", async () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        adCreate,
+        {
+          title: "New Ad",
+          content: "Content",
+          position: "home_below_header",
+          type: "plain_ad",
+          active: true,
+        },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws for non-admin user", async () => {
+    await expect(
+      callHandler(
+        adCreate,
+        {
+          title: "New Ad",
+          content: "Content",
+          position: "home_below_header",
+          type: "plain_ad",
+          active: true,
+        },
+        userContext,
+      ),
+    ).rejects.toThrow("Admin access required")
+  })
+
+  it("creates a new ad for admin", async () => {
     const ad = adFixture({
       title: "New Ad",
       position: "home_below_header",
@@ -115,36 +166,68 @@ describe("adCreate", () => {
     })
     mockCallIndex = 0
     mockReturnValues = [[ad]]
-    const result = await callHandler(adCreate, {
-      title: "New Ad",
-      content: "Content",
-      position: "home_below_header",
-      type: "plain_ad",
-      active: true,
-    })
+    const result = await callHandler(
+      adCreate,
+      {
+        title: "New Ad",
+        content: "Content",
+        position: "home_below_header",
+        type: "plain_ad",
+        active: true,
+      },
+      adminContext,
+    )
     expect(result).toEqual([ad])
   })
 })
 
 describe("adUpdate", () => {
-  it("updates an existing ad", async () => {
+  it("throws when unauthenticated", async () => {
+    await expect(
+      callHandler(adUpdate, { id: "ad_001", title: "Updated Ad" }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws for non-admin user", async () => {
+    await expect(
+      callHandler(adUpdate, { id: "ad_001", title: "Updated Ad" }, userContext),
+    ).rejects.toThrow("Admin access required")
+  })
+
+  it("updates an existing ad for admin", async () => {
     const ad = adFixture({ title: "Updated Ad" })
     mockCallIndex = 0
     mockReturnValues = [[ad]]
-    const result = await callHandler(adUpdate, {
-      id: "ad_001",
-      title: "Updated Ad",
-    })
+    const result = await callHandler(
+      adUpdate,
+      {
+        id: "ad_001",
+        title: "Updated Ad",
+      },
+      adminContext,
+    )
     expect(result).toEqual([ad])
   })
 })
 
 describe("adDelete", () => {
-  it("deletes an ad", async () => {
+  it("throws when unauthenticated", async () => {
+    await expect(callHandler(adDelete, { id: "ad_001" }, null)).rejects.toThrow(
+      "Authentication required",
+    )
+  })
+
+  it("throws for non-admin user", async () => {
+    await expect(
+      callHandler(adDelete, { id: "ad_001" }, userContext),
+    ).rejects.toThrow("Admin access required")
+  })
+
+  it("deletes an ad for admin", async () => {
     const ad = adFixture()
     mockCallIndex = 0
     mockReturnValues = [[ad]]
-    const result = await callHandler(adDelete, { id: "ad_001" })
+    const result = await callHandler(adDelete, { id: "ad_001" }, adminContext)
     expect(result).toEqual([ad])
   })
 })

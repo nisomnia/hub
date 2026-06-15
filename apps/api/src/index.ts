@@ -1,18 +1,46 @@
+import type { ContentfulStatusCode } from "hono/utils/http-status"
+
 import { OpenAPIHandler } from "@orpc/openapi/fetch"
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins"
-import { onError } from "@orpc/server"
+import { ORPCError, onError } from "@orpc/server"
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4"
 import { Hono } from "hono"
 
+import { AuthError } from "auth"
 import { serverPort } from "env/ports"
 
+import { authMiddleware } from "./auth/middleware"
 import { router } from "./routers"
+import { mountAuthRoutes } from "./routers/auth"
 
 const app = new Hono()
+
+app.onError((err, c) => {
+  if (err instanceof AuthError) {
+    return c.json(
+      { error: err.message, code: err.code },
+      err.status as ContentfulStatusCode,
+    )
+  }
+
+  console.error(err)
+  return c.json({ error: "Internal server error" }, 500 as ContentfulStatusCode)
+})
+
+mountAuthRoutes(app)
+
+app.use("/api/public/*", authMiddleware)
 
 const handler = new OpenAPIHandler(router, {
   interceptors: [
     onError((error) => {
+      if (error instanceof AuthError) {
+        throw new ORPCError(error.code, {
+          status: error.status,
+          message: error.message,
+        })
+      }
+
       console.error(error)
     }),
   ],
@@ -54,7 +82,7 @@ app.use("/api/public/*", async (c, next) => {
 
   const { matched, response } = await handler.handle(request, {
     prefix: "/api/public",
-    context: {},
+    context: { user: c.get("user") },
   })
 
   if (matched) {

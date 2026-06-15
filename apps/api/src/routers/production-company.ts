@@ -1,7 +1,7 @@
-import { os } from "@orpc/server"
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
+import { os, requireAuthorOrAdminMiddleware } from "@/auth/orpc"
 import { db } from "@/db"
 import {
   insertProductionCompanySchema,
@@ -38,6 +38,7 @@ const sitemapOutput = z.object({
 
 const _createProductionCompany = os
   .route({ method: "POST", path: "/production-company/create" })
+  .use(requireAuthorOrAdminMiddleware)
   .input(createProductionCompanySchema)
   .output(z.array(selectProductionCompanySchema))
   .handler(async ({ input }) => {
@@ -60,6 +61,7 @@ const _createProductionCompany = os
 export const productionCompanyRouter = {
   productionCompanyDashboard: os
     .route({ method: "POST", path: "/production-company/dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(pageSchema)
     .output(z.array(selectProductionCompanySchema))
     .handler(({ input }) =>
@@ -137,6 +139,7 @@ export const productionCompanyRouter = {
     ),
   productionCompanyCountDashboard: os
     .route({ method: "GET", path: "/production-company/count-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .output(z.number())
     .handler(async () =>
       firstValue(await db.select({ value: count() }).from(productionCompanies)),
@@ -162,6 +165,7 @@ export const productionCompanyRouter = {
     ),
   productionCompanySearchDashboard: os
     .route({ method: "POST", path: "/production-company/search-dashboard" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(searchSchema)
     .output(z.array(selectProductionCompanySchema))
     .handler(({ input }) =>
@@ -179,6 +183,7 @@ export const productionCompanyRouter = {
   productionCompanyCreate: _createProductionCompany,
   productionCompanyUpdate: os
     .route({ method: "POST", path: "/production-company/update" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(editProductionCompanySchema)
     .output(z.array(selectProductionCompanySchema))
     .handler(({ input }) => {
@@ -192,6 +197,7 @@ export const productionCompanyRouter = {
     }),
   productionCompanyDelete: os
     .route({ method: "POST", path: "/production-company/delete" })
+    .use(requireAuthorOrAdminMiddleware)
     .input(idInputSchema)
     .output(z.array(selectProductionCompanySchema))
     .handler(({ input }) =>

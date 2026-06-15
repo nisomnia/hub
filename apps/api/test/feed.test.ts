@@ -5,6 +5,7 @@ import {
   createMockDb,
   feedFixture,
   feedTopicFixture,
+  userFixture,
 } from "./fixtures"
 
 let mockCallIndex = 0
@@ -43,6 +44,9 @@ const {
   feedUpdateWithoutChangeUpdatedDate,
   feedDelete,
 } = feedRouter
+
+const adminContext = { user: userFixture({ role: "admin" }) }
+const userContext = { user: userFixture() }
 
 describe("feedById", () => {
   it("returns feed with topics when found", async () => {
@@ -285,6 +289,18 @@ describe("feedRelatedInfinite", () => {
 })
 
 describe("feedDashboard", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(feedDashboard, { page: 1, perPage: 10 }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(feedDashboard, { page: 1, perPage: 10 }, userContext),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("returns paginated feeds ordered by updatedAt desc", async () => {
     const feed = feedFixture()
     mockCallIndex = 0
@@ -325,6 +341,18 @@ describe("feedCount", () => {
 })
 
 describe("feedCountDashboard", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(callHandler(feedCountDashboard, {}, null)).rejects.toThrow(
+      "Authentication required",
+    )
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(feedCountDashboard, {}, userContext),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("returns count of all feeds", async () => {
     mockCallIndex = 0
     mockReturnValues = [[{ value: 42 }]]
@@ -364,6 +392,26 @@ describe("feedSearch", () => {
 })
 
 describe("feedSearchDashboard", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        feedSearchDashboard,
+        { searchQuery: "Test", limit: 10, language: "id" },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(
+        feedSearchDashboard,
+        { searchQuery: "Test", limit: 10, language: "id" },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("returns matching feeds by search query", async () => {
     const feed = feedFixture({ title: "Test Feed" })
     mockCallIndex = 0
@@ -378,6 +426,42 @@ describe("feedSearchDashboard", () => {
 })
 
 describe("feedCreate", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        feedCreate,
+        {
+          title: "New Feed",
+          language: "id",
+          link: "https://example.com",
+          type: "website",
+          owner: "Test Owner",
+          status: "published",
+          topics: [],
+        },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(
+        feedCreate,
+        {
+          title: "New Feed",
+          language: "id",
+          link: "https://example.com",
+          type: "website",
+          owner: "Test Owner",
+          status: "published",
+          topics: [],
+        },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("creates a feed with topics", async () => {
     const feed = feedFixture({ title: "New Feed" })
     mockCallIndex = 0
@@ -412,6 +496,44 @@ describe("feedCreate", () => {
 })
 
 describe("feedUpdate", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        feedUpdate,
+        {
+          id: "feed_001",
+          title: "Updated Feed",
+          language: "id",
+          link: "https://example.com",
+          type: "website",
+          owner: "Test Owner",
+          status: "published",
+          topics: [],
+        },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(
+        feedUpdate,
+        {
+          id: "feed_001",
+          title: "Updated Feed",
+          language: "id",
+          link: "https://example.com",
+          type: "website",
+          owner: "Test Owner",
+          status: "published",
+          topics: [],
+        },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("updates a feed with topics", async () => {
     const feed = feedFixture({ title: "Updated Feed" })
     mockCallIndex = 0
@@ -448,6 +570,44 @@ describe("feedUpdate", () => {
 })
 
 describe("feedUpdateWithoutChangeUpdatedDate", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(
+        feedUpdateWithoutChangeUpdatedDate,
+        {
+          id: "feed_001",
+          title: "Updated Feed",
+          language: "id",
+          link: "https://example.com",
+          type: "website",
+          owner: "Test Owner",
+          status: "published",
+          topics: [],
+        },
+        null,
+      ),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(
+        feedUpdateWithoutChangeUpdatedDate,
+        {
+          id: "feed_001",
+          title: "Updated Feed",
+          language: "id",
+          link: "https://example.com",
+          type: "website",
+          owner: "Test Owner",
+          status: "published",
+          topics: [],
+        },
+        userContext,
+      ),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("updates a feed without changing updatedAt", async () => {
     const feed = feedFixture({ title: "Updated Feed" })
     mockCallIndex = 0
@@ -467,6 +627,18 @@ describe("feedUpdateWithoutChangeUpdatedDate", () => {
 })
 
 describe("feedDelete", () => {
+  it("throws Authentication required when unauthenticated", async () => {
+    await expect(
+      callHandler(feedDelete, { id: "feed_001" }, null),
+    ).rejects.toThrow("Authentication required")
+  })
+
+  it("throws Author or admin access required for non-author/admin user", async () => {
+    await expect(
+      callHandler(feedDelete, { id: "feed_001" }, userContext),
+    ).rejects.toThrow("Author or admin access required")
+  })
+
   it("deletes feedTopics and feed", async () => {
     const feed = feedFixture()
     mockCallIndex = 0

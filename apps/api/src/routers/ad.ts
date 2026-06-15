@@ -1,7 +1,7 @@
-import { os } from "@orpc/server"
 import { count, desc, eq, ilike, sql } from "drizzle-orm"
 import { z } from "zod"
 
+import { os, requireAdminMiddleware } from "@/auth/orpc"
 import { db } from "@/db"
 import {
   adPosition,
@@ -32,6 +32,7 @@ const editAdSchema = updateAdSchema.extend({ id: z.string() })
 export const adRouter = {
   adDashboard: os
     .route({ method: "POST", path: "/ad/dashboard" })
+    .use(requireAdminMiddleware)
     .input(pageSchema)
     .output(z.array(selectAdSchema))
     .handler(({ input }) => {
@@ -77,6 +78,7 @@ export const adRouter = {
     }),
   adCreate: os
     .route({ method: "POST", path: "/ad/create" })
+    .use(requireAdminMiddleware)
     .input(createAdSchema)
     .output(z.array(selectAdSchema))
     .handler(({ input }) => {
@@ -87,6 +89,7 @@ export const adRouter = {
     }),
   adUpdate: os
     .route({ method: "POST", path: "/ad/update" })
+    .use(requireAdminMiddleware)
     .input(editAdSchema)
     .output(z.array(selectAdSchema))
     .handler(({ input }) => {
@@ -98,6 +101,7 @@ export const adRouter = {
     }),
   adDelete: os
     .route({ method: "POST", path: "/ad/delete" })
+    .use(requireAdminMiddleware)
     .input(idInputSchema)
     .output(z.array(selectAdSchema))
     .handler(({ input }) => {
