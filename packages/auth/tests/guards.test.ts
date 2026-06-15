@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 
 import {
-  AuthError,
   requireAdmin,
   requireAuth,
   requireAuthor,
@@ -31,12 +30,11 @@ describe("requireAuth", () => {
   })
 
   it("throws AuthError when user is null", () => {
-    expect(() => requireAuth(null)).toThrow(AuthError)
     expect(() => requireAuth(null)).toThrow("Authentication required")
   })
 
   it("throws AuthError when user is undefined", () => {
-    expect(() => requireAuth(undefined)).toThrow(AuthError)
+    expect(() => requireAuth(undefined)).toThrow("Authentication required")
   })
 })
 
@@ -46,9 +44,8 @@ describe("requireAdmin", () => {
   })
 
   it("throws for non-admin roles", () => {
-    expect(() => requireAdmin(user)).toThrow(AuthError)
     expect(() => requireAdmin(user)).toThrow("Admin access required")
-    expect(() => requireAdmin(author)).toThrow(AuthError)
+    expect(() => requireAdmin(author)).toThrow("Admin access required")
   })
 
   it("throws when unauthenticated", () => {
@@ -62,7 +59,7 @@ describe("requireAuthor", () => {
   })
 
   it("throws for non-author roles", () => {
-    expect(() => requireAuthor(user)).toThrow(AuthError)
+    expect(() => requireAuthor(user)).toThrow("Author access required")
     expect(() => requireAuthor(admin)).toThrow("Author access required")
   })
 })
@@ -74,7 +71,9 @@ describe("requireAuthorOrAdmin", () => {
   })
 
   it("throws for user or member roles", () => {
-    expect(() => requireAuthorOrAdmin(user)).toThrow(AuthError)
+    expect(() => requireAuthorOrAdmin(user)).toThrow(
+      "Author or admin access required",
+    )
     expect(() => requireAuthorOrAdmin(member)).toThrow(
       "Author or admin access required",
     )

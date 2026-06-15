@@ -53,6 +53,10 @@ This is a Bun-based monorepo managed by Vite+ with workspaces under `apps/*`,
 - Never add comments or JSDoc to source code. Code should be self-documenting.
 - Always use `@/` absolute imports (e.g. `from "@/db"`). Never use `../` parent
   relative imports — enforced by `import/no-relative-parent-imports`.
+- Prefer functional programming: use factory functions and plain objects instead
+  of classes. Avoid `class`, `new`, and `this` in application code. Third-party
+  library APIs (e.g. `Hono`, `Proxy`, `Error`) are exceptions when no functional
+  alternative exists.
 
 ## Code Quality & Workflow
 

@@ -1,7 +1,7 @@
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm"
 import { z } from "zod"
 
-import { AuthError, requireAuth } from "auth"
+import { createAuthError, requireAuth } from "auth"
 
 import { os, requireAdminMiddleware, requireAuthMiddleware } from "@/auth/orpc"
 import { db } from "@/db"
@@ -118,7 +118,7 @@ export const userRouter = {
       const user = requireAuth(context.user)
 
       if (input.id !== user.id)
-        throw new AuthError(
+        throw createAuthError(
           "You can only update your own profile",
           403,
           "FORBIDDEN",
@@ -184,7 +184,7 @@ export const userRouter = {
       const user = requireAuth(context.user)
 
       if (input.id !== user.id)
-        throw new AuthError(
+        throw createAuthError(
           "You can only delete your own account",
           403,
           "FORBIDDEN",

@@ -1,16 +1,16 @@
 import { Hono } from "hono"
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
-vi.mock("arctic", () => ({
-  Google: class MockGoogle {
-    createAuthorizationURL() {
-      return new URL("https://accounts.google.com/o/oauth2/v2/auth")
-    }
+function mockGoogle() {
+  return {
+    createAuthorizationURL: () =>
+      new URL("https://accounts.google.com/o/oauth2/v2/auth"),
+    validateAuthorizationCode: async () => ({ idToken: () => "id_token" }),
+  }
+}
 
-    async validateAuthorizationCode() {
-      return { idToken: () => "id_token" }
-    }
-  },
+vi.mock("arctic", () => ({
+  Google: mockGoogle,
   generateState: () => "oauth_state",
   generateCodeVerifier: () => "code_verifier",
   decodeIdToken: () => ({

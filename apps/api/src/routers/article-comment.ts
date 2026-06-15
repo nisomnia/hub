@@ -1,7 +1,7 @@
 import { and, count, desc, eq, lt, sql } from "drizzle-orm"
 import { z } from "zod"
 
-import { AuthError, requireAuth } from "auth"
+import { createAuthError, requireAuth } from "auth"
 
 import {
   os,
@@ -56,7 +56,7 @@ async function getCommentById(id: string) {
 
 function verifyCommentOwner(comment: { authorId: string }, userId: string) {
   if (comment.authorId !== userId) {
-    throw new AuthError(
+    throw createAuthError(
       "You can only manage your own comments",
       403,
       "FORBIDDEN",

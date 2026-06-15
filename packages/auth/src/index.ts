@@ -14,12 +14,15 @@ export {
 } from "./oauth.js"
 
 export {
-  AuthError,
+  createAuthError,
+  isAuthError,
   requireAuth,
   requireAdmin,
   requireAuthor,
   requireAuthorOrAdmin,
 } from "./guards.js"
+
+export type { AuthError } from "./guards.js"
 
 export type {
   AuthConfig,

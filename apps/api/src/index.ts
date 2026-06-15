@@ -6,7 +6,7 @@ import { ORPCError, onError } from "@orpc/server"
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4"
 import { Hono } from "hono"
 
-import { AuthError } from "auth"
+import { isAuthError } from "auth"
 import { serverPort } from "env/ports"
 
 import { authMiddleware } from "./auth/middleware"
@@ -16,7 +16,7 @@ import { mountAuthRoutes } from "./routers/auth"
 const app = new Hono()
 
 app.onError((err, c) => {
-  if (err instanceof AuthError) {
+  if (isAuthError(err)) {
     return c.json(
       { error: err.message, code: err.code },
       err.status as ContentfulStatusCode,
@@ -34,7 +34,7 @@ app.use("/api/public/*", authMiddleware)
 const handler = new OpenAPIHandler(router, {
   interceptors: [
     onError((error) => {
-      if (error instanceof AuthError) {
+      if (isAuthError(error)) {
         throw new ORPCError(error.code, {
           status: error.status,
           message: error.message,
