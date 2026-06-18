@@ -112,7 +112,7 @@ The `.vite-hooks/pre-commit` hook runs `vp staged`, which automatically:
 
 - Shared dependency versions are declared in the root `package.json` `"catalog"`
   field.
-- Root `overrides` pins `vite` and `vitest` to the catalog versions.
+- Root `overrides` pins `vite` to the Vite+ core catalog version.
 - `drizzle-zod` is installed at the root level.
 
 ## Quick Reference
