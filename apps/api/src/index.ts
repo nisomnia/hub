@@ -21,7 +21,7 @@ const isProduction = honoEnv.NODE_ENV === "production"
 
 app.use(
   cors({
-    origin: isProduction ? "https://nisomnia.com" : "*",
+    origin: isProduction ? "https://nisomnia.com" : (origin) => origin,
     credentials: true,
   }),
 )
