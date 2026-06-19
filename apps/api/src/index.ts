@@ -5,15 +5,26 @@ import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins"
 import { ORPCError, onError } from "@orpc/server"
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4"
 import { Hono } from "hono"
+import { cors } from "hono/cors"
 
 import { isAuthError } from "auth"
 import { serverPort } from "env/ports"
+import { honoEnv } from "env/server"
 
 import { authMiddleware } from "./auth/middleware"
 import { router } from "./routers"
 import { mountAuthRoutes } from "./routers/auth"
 
 const app = new Hono()
+
+const isProduction = honoEnv.NODE_ENV === "production"
+
+app.use(
+  cors({
+    origin: isProduction ? "https://nisomnia.com" : "*",
+    credentials: true,
+  }),
+)
 
 app.onError((err, c) => {
   if (isAuthError(err)) {
