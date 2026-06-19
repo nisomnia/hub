@@ -4,7 +4,7 @@ import { resolve } from "node:path"
 
 import { apiSpecUrl } from "env/server"
 
-const specUrl = apiSpecUrl ?? "http://localhost:8000/api/public/spec.json"
+const specUrl = apiSpecUrl ?? "http://localhost:8000/public/spec.json"
 const outDir = resolve(import.meta.dir, "..", "dist")
 const typesPath = resolve(outDir, "client-types.d.ts")
 const specPath = resolve(outDir, "spec.json")

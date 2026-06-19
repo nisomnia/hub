@@ -29,7 +29,7 @@ app.onError((err, c) => {
 
 mountAuthRoutes(app)
 
-app.use("/api/public/*", authMiddleware)
+app.use("/public/*", authMiddleware)
 
 const handler = new OpenAPIHandler(router, {
   interceptors: [
@@ -70,7 +70,7 @@ const BODY_PARSER_METHODS = new Set([
 type BodyParserMethod =
   typeof BODY_PARSER_METHODS extends Set<infer T> ? T : never
 
-app.use("/api/public/*", async (c, next) => {
+app.use("/public/*", async (c, next) => {
   const request = new Proxy(c.req.raw, {
     get(target, prop) {
       if (BODY_PARSER_METHODS.has(prop as BodyParserMethod)) {
@@ -81,7 +81,7 @@ app.use("/api/public/*", async (c, next) => {
   })
 
   const { matched, response } = await handler.handle(request, {
-    prefix: "/api/public",
+    prefix: "/public",
     context: { user: c.get("user") },
   })
 
@@ -93,7 +93,7 @@ app.use("/api/public/*", async (c, next) => {
 })
 
 app.get("/", (c) => {
-  return c.text("Hello Hono!")
+  return c.text("Hello World!")
 })
 
 export default {

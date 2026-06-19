@@ -24,7 +24,7 @@ const authConfig: AuthConfig = {
 }
 
 export function mountAuthRoutes(app: Hono) {
-  app.get("/api/public/auth/login/google", (c: Context) => {
+  app.get("/public/auth/login/google", (c: Context) => {
     const state = generateState()
     const codeVerifier = generateCodeVerifier()
 
@@ -59,7 +59,7 @@ export function mountAuthRoutes(app: Hono) {
     return c.redirect(url.toString())
   })
 
-  app.get("/api/public/auth/login/google/callback", async (c: Context) => {
+  app.get("/public/auth/login/google/callback", async (c: Context) => {
     const code = c.req.query("code")
     const state = c.req.query("state")
 
@@ -158,7 +158,7 @@ export function mountAuthRoutes(app: Hono) {
     return c.redirect(`${honoEnv.PUBLIC_API_URL ?? ""}/`)
   })
 
-  app.post("/api/public/auth/logout", async (c: Context) => {
+  app.post("/public/auth/logout", async (c: Context) => {
     const token = getCookie(c, "session")
 
     if (token) {

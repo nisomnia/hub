@@ -62,8 +62,8 @@ vi.mock("env/server", () => ({
     GOOGLE_CLIENT_ID: "google_client_id",
     GOOGLE_CLIENT_SECRET: "google_client_secret",
     GOOGLE_REDIRECT_URL:
-      "http://localhost:8000/api/public/auth/login/google/callback",
-    PUBLIC_API_URL: "http://localhost:8000/api",
+      "http://localhost:8000/public/auth/login/google/callback",
+    PUBLIC_API_URL: "http://localhost:8000",
   },
 }))
 
@@ -96,10 +96,10 @@ describe("auth routes", () => {
     ;(globalThis as { __authDbQueue?: unknown[] }).__authDbQueue = []
   })
 
-  describe("GET /api/public/auth/login/google", () => {
+  describe("GET /public/auth/login/google", () => {
     it("redirects to Google with OAuth state cookies", async () => {
       const app = createApp()
-      const res = await app.request("/api/public/auth/login/google")
+      const res = await app.request("/public/auth/login/google")
 
       expect(res.status).toBe(302)
       expect(res.headers.get("location")).toBe(
@@ -116,7 +116,7 @@ describe("auth routes", () => {
     })
   })
 
-  describe("GET /api/public/auth/login/google/callback", () => {
+  describe("GET /public/auth/login/google/callback", () => {
     it("creates a session for an existing account and redirects", async () => {
       ;(globalThis as { __authDbQueue?: unknown[] }).__authDbQueue = [
         [{ userId: "existing_user_id" }],
@@ -128,7 +128,7 @@ describe("auth routes", () => {
 
       const app = createApp()
       const res = await app.request(
-        "/api/public/auth/login/google/callback?code=code&state=oauth_state",
+        "/public/auth/login/google/callback?code=code&state=oauth_state",
         {
           headers: {
             Cookie:
@@ -160,7 +160,7 @@ describe("auth routes", () => {
 
       const app = createApp()
       const res = await app.request(
-        "/api/public/auth/login/google/callback?code=code&state=oauth_state",
+        "/public/auth/login/google/callback?code=code&state=oauth_state",
         {
           headers: {
             Cookie:
@@ -181,7 +181,7 @@ describe("auth routes", () => {
     it("rejects callback when state is missing", async () => {
       const app = createApp()
       const res = await app.request(
-        "/api/public/auth/login/google/callback?code=code&state=oauth_state",
+        "/public/auth/login/google/callback?code=code&state=oauth_state",
       )
 
       expect(res.status).toBe(400)
@@ -189,7 +189,7 @@ describe("auth routes", () => {
     })
   })
 
-  describe("POST /api/public/auth/logout", () => {
+  describe("POST /public/auth/logout", () => {
     it("invalidates the session and clears the cookie", async () => {
       vi.mocked(validateSession).mockResolvedValue({
         session: {
@@ -201,7 +201,7 @@ describe("auth routes", () => {
       })
 
       const app = createApp()
-      const res = await app.request("/api/public/auth/logout", {
+      const res = await app.request("/public/auth/logout", {
         method: "POST",
         headers: { Cookie: "session=session_token" },
       })
@@ -229,7 +229,7 @@ describe("auth routes", () => {
       })
 
       const app = createApp()
-      const res = await app.request("/api/public/auth/logout", {
+      const res = await app.request("/public/auth/logout", {
         method: "POST",
         headers: { Cookie: "session=invalid_token" },
       })
